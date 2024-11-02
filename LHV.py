@@ -1,4 +1,3 @@
-fail = open("LHV.csv", encoding = "UTF-8")
 
 def KuludTulud(failinimi):
 
@@ -29,10 +28,9 @@ def KuludTulud(failinimi):
 
     return f"Tulusid oli {round(sum(tulud),2)} € ja kulusid {round(sum(kulud),2)} €. Kahe kuu konto saldo on {round(sum(raha),2)} eurot."
             
-    #return raha
+#print(KuludTulud("LHV.csv"))
 
-
-KuludTulud("LHV.csv")
+"""
 
 def Toidupood(failinimi):
 
@@ -64,19 +62,5 @@ def Toidupood(failinimi):
                 asukoht.append(pood)
 
     #return f"Poe oste on tehtud {len(asukoht)} korda"
-    return asukoht
-
-#Toidupood("LHV.csv")
-
-
-
-
-#pood = Toidupood("LHV.csv")
-#raha = KuludTulud("LHV.csv")
-
-
-
-
-
-
-
+                
+    return asukoht """
