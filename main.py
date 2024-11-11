@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import pyrebase
 import pandas as pd
 import os
-from LHV import KuludTulud as LHV_KuludTulud  # Import specific functions for each bank
+from LHV import KuludTulud as LHV_KuludTulud 
 from SEB import KuludTulud as SEB_KuludTulud
 from SWEDBANK import KuludTulud as SWED_KuludTulud
 
