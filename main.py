@@ -23,9 +23,6 @@ app.secret_key = "supersecretkey"
 
 @app.route("/")
 def main_page():
-<<<<<<< HEAD
-    return render_template("kulud.html")
-=======
     return render_template("firebase.html")
 
 @app.route("/upload_csv", methods=["POST"])
@@ -82,7 +79,6 @@ def upload_csv():
     
     # Render the result on a results page
     return render_template("results.html", result=result)
->>>>>>> 4cc5a79e533f0bbd5cd4a34b14952be56416b3f3
 
 if __name__ == "__main__":
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
