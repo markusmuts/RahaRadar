@@ -30,11 +30,13 @@ function loadGoogleCharts() {
       width: 500,
       height: 500,
       pieSliceText: 'none',
+      titleTextStyle: {
+        fontSize: 30,
+        bold: true
+      },
       chartArea: {
-        width: '80%',
-        height: '80%',
-        left: 0,
-        top: 0
+        left: 80,
+        top: 80
       },
       legend: { position: 'bottom' },
     };
