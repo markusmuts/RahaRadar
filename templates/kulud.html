@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <title>RahaRadar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style_kulud.css')}}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png')}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<script src="{{ url_for('static', filename='javascript/chart.js')}}"></script>    
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/raharadar.png')}}" style="height: 56.5px; width: 219px; margin-left: 20px;">
+        <div class="pages">
+            <a>KULUD</a>
+            <a>TULUD</a>
+            <a>SÄÄSTMINE</a>
+        </div>
+        <div style="display: inline-flex; width: 20%; height: fit-content; justify-content: space-evenly;">
+            <div style="display: inline-flex; justify-content: space-between; width: fit-content;">
+                <img src="{{ url_for('static', filename='images/pilt.png')}}" style="height: 30px; width: 30px; align-self: center; padding-right: 10px;">
+                <p class="hello_message">Tere, Peeter!</p>
+            </div>
+            <button type="menu" class="menu">Vaheta Kuu/Aasta</button>
+        </div>
+    </div>
+    <div class="main">
+        <div id="donutchart" style="border: 2px solid gray;"></div>
+    </div>
+</body>
+</html>
