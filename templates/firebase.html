@@ -4,14 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Main Page</title>
-</head>
-<body>
-    <h1>Add Data to Firebase</h1>
-    <form action="/add_data" method="post">
-        <input type="text" name="data" placeholder="Enter data here">
-        <button type="submit">Submit</button>
-        <meta charset="UTF-8">
-    <title>Upload CSV Files</title>
     <script>
         function showFileInputs() {
             const bank = document.getElementById("bank").value;
@@ -21,6 +13,16 @@
     </script>
 </head>
 <body>
+    <h1>Add Data to Firebase</h1>
+    <form action="/add_data" method="post">
+        <input type="text" name="data" placeholder="Enter data here">
+        <button type="submit">Submit</button>
+    </form>
+    
+    <h2>Actions</h2>
+    <a href="/get_data">View Stored Data</a>
+    <br><br>
+
     <h1>Select Bank and Upload CSV File(s)</h1>
     <form action="/upload_csv" method="post" enctype="multipart/form-data">
         <label for="bank">Select Bank:</label>
@@ -32,20 +34,19 @@
         </select>
 
         <div id="lhv-file" style="display: none;">
-            <label for="file_lhv">Lae üles LHV fail:</label>
+            <label for="file_lhv">Upload LHV File:</label>
             <input type="file" name="file_lhv" accept=".csv">
         </div>
 
         <div id="seb-swed-files" style="display: none;">
-            <label for="file_income">Lae üles tulude fail:</label>
+            <label for="file_income">Upload Income File:</label>
             <input type="file" name="file_income" accept=".csv">
             
-            <label for="file_expenses">Lae üles kulude fail:</label>
+            <label for="file_expenses">Upload Expenses File:</label>
             <input type="file" name="file_expenses" accept=".csv">
         </div>
 
         <button type="submit">Upload</button>
     </form>
-
 </body>
 </html>

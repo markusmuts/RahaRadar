@@ -1,3 +1,4 @@
+from flask import Flask, render_template
 from flask import Flask, render_template, request, redirect, url_for, flash
 import pyrebase
 import pandas as pd
@@ -24,6 +25,34 @@ app.secret_key = "supersecretkey"
 @app.route("/")
 def main_page():
     return render_template("firebase.html")
+
+@app.route("/add_data", methods=["POST"])
+def add_data():
+    data = request.form.get("data")
+    
+    if data:
+        try:
+            # Add data to Firebase, under 'entries'
+            db.child("entries").push({"data": data})
+            print("Data successfully pushed to Firebase:", data)  # Debug statement
+            flash("Data added successfully!")
+        except Exception as e:
+            print("Error adding data to Firebase:", e)
+            flash("There was an error adding data to Firebase.")
+    else:
+        flash("Please enter some data.")
+    
+    return redirect(url_for("main_page"))
+
+@app.route("/get_data")
+def get_data():
+    # Retrieve data from Firebase
+    entries = db.child("entries").get()
+    
+    # Parse data if entries are found; otherwise, provide a default empty list
+    data_list = entries.val() if entries.val() else []
+    
+    return render_template("display_data.html", data=data_list)
 
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv():
@@ -77,7 +106,7 @@ def upload_csv():
         flash("Please select a valid bank.")
         return redirect(url_for("main_page"))
     
-    # Render the result on a results page
+    # Render the result on the results page
     return render_template("results.html", result=result)
 
 if __name__ == "__main__":
