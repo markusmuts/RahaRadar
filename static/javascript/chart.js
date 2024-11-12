@@ -25,15 +25,10 @@ function loadGoogleCharts() {
   
     // Set chart options
     const options = {
-      title: 'Kulude analüüs',
       pieHole: 0.6,
       width: 500,
       height: 500,
       pieSliceText: 'none',
-      titleTextStyle: {
-        fontSize: 30,
-        bold: true
-      },
       chartArea: {
         left: 80,
         top: 80

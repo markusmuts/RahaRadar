@@ -24,7 +24,7 @@ app.secret_key = "supersecretkey"
 
 @app.route("/")
 def main_page():
-    return render_template("firebase.html")
+    return render_template("kulud.html")
 
 @app.route("/add_data", methods=["POST"])
 def add_data():
