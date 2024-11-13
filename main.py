@@ -1,3 +1,20 @@
+################################################
+# Programmeerimine I
+# 2024/2025 sügissemester
+#
+# Projekt RahaRadar 
+# Teema: Isiklike kulude, tulude ja säästmise jälgimise veebirakendus
+#
+#
+# Autorid: Markus Muts, Randel Johannes Reeder
+#
+# mõningane eeskuju: Eelmise aasta projekt (Koduse eelarve haldamise programm), isiklik vajadus taolise programmi järele
+#
+# Lisakommentaar (nt käivitusjuhend): Main branchis on fail nimega "ülespanek.md", milles on juhend programmi käivitamiseks
+#
+##################################################
+
+
 from flask import Flask, render_template
 from flask import Flask, render_template, request, redirect, url_for, flash
 import pyrebase
@@ -8,6 +25,7 @@ from SEB import KuludTulud as SEB_KuludTulud
 from SWEDBANK import KuludTulud as SWED_KuludTulud
 from flask import jsonify
 
+# Ei saa peita oma config-i kuna muidu programm ei töötaks.
 config = {
   "apiKey": "AIzaSyCewjkjV-23sjbKG2QpNQfxo2SN9lMu2oU",
   "authDomain": "raharadar-27498.firebaseapp.com",
@@ -16,7 +34,7 @@ config = {
 }
 
 
-
+# Firebase ja Flask rakenduse initsialiseerimine
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 db = firebase.database()
@@ -29,19 +47,19 @@ app.secret_key = "supersecretkey"
 def main_page():
     return render_template("kulud.html")
 
+# Funktsioon, mis lisab tehingu Firebase andmebaasi
 def add_transaction_to_firebase(date, payer, category, amount):
-    # Prepare the transaction data
     transaction_data = {
-        "date": date,                 # e.g., "01.10.2024"
-        "payer": payer,               # e.g., "Coop Maksimarket"
-        "category": category,         # e.g., "Toit ja restoranid"
-        "amount": amount              # e.g., -9.28
+        "date": date,                 
+        "payer": payer,               
+        "category": category,         
+        "amount": amount              
     }
     
-    # Add to Firebase under 'entries' node
     db.child("entries").push(transaction_data)
-    print("Transaction added to Firebase:", transaction_data)
+    print("Tehing lisatud Firebase'i:", transaction_data)
 
+# Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data", methods=["POST"])
 def add_data():
     date = request.form.get("date")
@@ -51,64 +69,61 @@ def add_data():
     
     if date and payer and category and amount:
         try:
-            # Add data to Firebase with the correct structure
             db.child("entries").push({
                 "date": date,
                 "payer": payer,
                 "category": category,
-                "amount": float(amount)  # Convert amount to float
+                "amount": float(amount)  # Kogus teisendatakse ujukomaarvuks
             })
-            flash("Data added successfully!")
+            flash("Andmed edukalt lisatud!")
         except Exception as e:
-            print("Error adding data to Firebase:", e)
-            flash("There was an error adding data to Firebase.")
+            print("Viga andmete lisamisel Firebase'i:", e)
+            flash("Tekkis viga andmete lisamisel Firebase'i.")
     else:
-        flash("Please complete all fields.")
+        flash("Palun täitke kõik väljad.")
     
     return redirect(url_for("main_page"))
 
+# Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel
 @app.route("/get_data")
 def get_data():
-    # Retrieve data from Firebase
     entries = db.child("entries").get()
     
-    # Parse data if entries are found; otherwise, provide a default empty list
     data_list = entries.val() if entries.val() else []
     
     return render_template("kulud.html", data=data_list)
 
+# Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
 @app.route("/chart-data")
 def chart_data():
-    # Fetch data from Firebase
     entries = db.child("entries").get()
     
-    # Transform Firebase data to a format suitable for Google Charts
-    data = [["Category", "Amount"]]  # Header for Google Charts data format
+    data = [["Category", "Amount"]]  
     if entries.val():
         for key, entry in entries.val().items():
-            data.append([entry["category"], float(entry["amount"])])  # Convert amount to float
+            data.append([entry["category"], float(entry["amount"])])  
     
-    return jsonify(data)  # Return data in JSON format
+    return jsonify(data)  
 
-
+# Funktsioon CSV-faili üleslaadimiseks ja töötlemiseks sõltuvalt valitud pangast
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv():
-    bank = request.form.get("bank")  # Get the selected bank from the form
+    bank = request.form.get("bank")  # Saadakse vormilt valitud pank
 
-    # Check for file uploads based on the bank selection
+    # Kontrollib, kas kasutaja laeb faili üles sõltuvalt valitud pangast
     if bank == "LHV":
         file = request.files.get("file_lhv")
         if not file or not file.filename.endswith(".csv"):
-            flash("Please upload a valid CSV file for LHV.")
+            flash("Palun laadige üles sobiv LHV CSV-fail.")
             return redirect(url_for("main_page"))
         
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
         file.save(file_path)
         
-        # Process the LHV file
+        # LHV-faili töötlemine
         result = LHV_KuludTulud(file_path)
         
-        # Remove the file after processing
+        # Kustutab faili pärast töötlemist
         os.remove(file_path)
     
     elif bank in ["SEB", "SWEDBANK"]:
@@ -116,38 +131,38 @@ def upload_csv():
         expenses_file = request.files.get("file_expenses")
         
         if not income_file or not income_file.filename.endswith(".csv"):
-            flash("Please upload a valid income CSV file.")
+            flash("Palun laadige üles sobiv tulude CSV-fail.")
             return redirect(url_for("main_page"))
         
         if not expenses_file or not expenses_file.filename.endswith(".csv"):
-            flash("Please upload a valid expenses CSV file.")
+            flash("Palun laadige üles sobiv kulude CSV-fail.")
             return redirect(url_for("main_page"))
         
-        # Save files temporarily
+        # Salvestab failid ajutiselt
         income_file_path = os.path.join(app.config["UPLOAD_FOLDER"], income_file.filename)
         expenses_file_path = os.path.join(app.config["UPLOAD_FOLDER"], expenses_file.filename)
         income_file.save(income_file_path)
         expenses_file.save(expenses_file_path)
         
-        # Process files based on the bank
+        # Töötleb failid sõltuvalt pangast
         if bank == "SEB":
             result = SEB_KuludTulud(income_file_path, expenses_file_path)
         elif bank == "SWEDBANK":
             result = SWED_KuludTulud(income_file_path, expenses_file_path)
         
-        # Remove files after processing
+        # Kustutab failid pärast töötlemist
         os.remove(income_file_path)
         os.remove(expenses_file_path)
     
     else:
-        flash("Please select a valid bank.")
+        flash("Palun valige sobiv pank.")
         return redirect(url_for("main_page"))
     
-    # Render the result on the results page
+    # Kuvab tulemuse results.html lehel
     return render_template("results.html", result=result)
 
 if __name__ == "__main__":
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
     
-    app.run(debug=True)
+    app.run(debug=True)  # Rakenduse käivitamine silumisrežiimis
