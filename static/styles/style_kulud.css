@@ -82,6 +82,8 @@ body, html {
 
 .list_upper {
     p {
+        display: flex;
+        justify-content: center;
         margin: 0;
         margin-top: 10px;
         padding-left: 10px;
@@ -130,3 +132,12 @@ body, html {
 .list_bottom {
     padding-left: 10px;
 }
+
+.form_container {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    height: 100%; /* Adjust as needed to match parent height */
+    padding: 20px; /* Optional padding */
+}
+

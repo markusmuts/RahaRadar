@@ -6,6 +6,7 @@ import os
 from LHV import KuludTulud as LHV_KuludTulud 
 from SEB import KuludTulud as SEB_KuludTulud
 from SWEDBANK import KuludTulud as SWED_KuludTulud
+from flask import jsonify
 
 config = {
   "apiKey": "AIzaSyCewjkjV-23sjbKG2QpNQfxo2SN9lMu2oU",
@@ -14,11 +15,13 @@ config = {
   "storageBucket": "raharadar-27498.firebasestorage.app"
 }
 
+
+
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 db = firebase.database()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config["UPLOAD_FOLDER"] = "uploads"
 app.secret_key = "supersecretkey"
 
@@ -26,21 +29,41 @@ app.secret_key = "supersecretkey"
 def main_page():
     return render_template("kulud.html")
 
+def add_transaction_to_firebase(date, payer, category, amount):
+    # Prepare the transaction data
+    transaction_data = {
+        "date": date,                 # e.g., "01.10.2024"
+        "payer": payer,               # e.g., "Coop Maksimarket"
+        "category": category,         # e.g., "Toit ja restoranid"
+        "amount": amount              # e.g., -9.28
+    }
+    
+    # Add to Firebase under 'entries' node
+    db.child("entries").push(transaction_data)
+    print("Transaction added to Firebase:", transaction_data)
+
 @app.route("/add_data", methods=["POST"])
 def add_data():
-    data = request.form.get("data")
+    date = request.form.get("date")
+    payer = request.form.get("payer")
+    category = request.form.get("category")
+    amount = request.form.get("amount")
     
-    if data:
+    if date and payer and category and amount:
         try:
-            # Add data to Firebase, under 'entries'
-            db.child("entries").push({"data": data})
-            print("Data successfully pushed to Firebase:", data)  # Debug statement
+            # Add data to Firebase with the correct structure
+            db.child("entries").push({
+                "date": date,
+                "payer": payer,
+                "category": category,
+                "amount": float(amount)  # Convert amount to float
+            })
             flash("Data added successfully!")
         except Exception as e:
             print("Error adding data to Firebase:", e)
             flash("There was an error adding data to Firebase.")
     else:
-        flash("Please enter some data.")
+        flash("Please complete all fields.")
     
     return redirect(url_for("main_page"))
 
@@ -52,7 +75,21 @@ def get_data():
     # Parse data if entries are found; otherwise, provide a default empty list
     data_list = entries.val() if entries.val() else []
     
-    return render_template("display_data.html", data=data_list)
+    return render_template("kulud.html", data=data_list)
+
+@app.route("/chart-data")
+def chart_data():
+    # Fetch data from Firebase
+    entries = db.child("entries").get()
+    
+    # Transform Firebase data to a format suitable for Google Charts
+    data = [["Category", "Amount"]]  # Header for Google Charts data format
+    if entries.val():
+        for key, entry in entries.val().items():
+            data.append([entry["category"], float(entry["amount"])])  # Convert amount to float
+    
+    return jsonify(data)  # Return data in JSON format
+
 
 @app.route("/upload_csv", methods=["POST"])
 def upload_csv():

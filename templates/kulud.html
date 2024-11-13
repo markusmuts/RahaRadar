@@ -43,17 +43,15 @@
                     <p style="width: 64.24px;"></p>
                 </div>
             </div>
-            <div class="list_main">
-                <div class="example_list_item">
-                    <div class="example_list_item_content">
-                        <p style="margin-left: 5px;">01.10.2024</p>
-                        <p>Coop Maksimarket</p>
-                        <p>Toit ja restoranid</p>
-                        <p style="color: #EB5252;">-9,28 EUR</p>
-                        <button style="margin-right: 30px; align-self: center; height: 30px;">Kustuta</button>
-                    </div>
-                </div>
-
+            <div class="form_container"> <!-- Added container for the form -->
+                <form id="transactionForm" action="{{ url_for('add_data') }}" method="POST">
+                    <input type="text" id="date" name="date" placeholder="DD.MM.YYYY" required size="6px">
+                    <input type="text" id="payer" name="payer" placeholder="Saaja / Maksja" required>
+                    <input type="text" id="category" name="category" placeholder="Kategooria" required>
+                    <input type="number" id="amount" name="amount" placeholder="Kulu" required>
+                    <button type="submit">Lisa tehing</button>
+                </form>
+            </div>
             </div>
             <div class="list_bottom">
                 <p>test</p>
