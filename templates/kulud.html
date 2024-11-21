@@ -54,6 +54,7 @@
                                 <th>Saaja / Maksja</th>
                                 <th>Kategooria</th>
                                 <th>Summa</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,10 +63,13 @@
                                 <td>{{ entry.date }}</td>
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
-                                <td>{{ entry.amount }} €</td>
+                                <td>{{ entry.amount }}</td>
+                                <td class="button-cell">
+                                    <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')">Kustuta</button>
+                                </td>
                             </tr>
                             {% endfor %}
-                        </tbody>
+                        </tbody>    
                     </table>
                     {% else %}
                     <p>Tehinguid pole selle kuu jaoks lisatud.</p>

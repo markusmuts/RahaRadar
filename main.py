@@ -108,6 +108,20 @@ def get_data():
 
     return render_template("kulud.html", data=data_list)
 
+
+@app.route("/delete_entry/<entry_id>", methods=["DELETE"])
+def delete_entry(entry_id):
+    try:
+        # Attempt to delete the entry in Firebase
+        db.child("entries").child(entry_id).remove()
+        return jsonify({"success": True, "message": "Tehing edukalt kustutatud!"}), 200
+    except Exception as e:
+        # Log the exact error for debugging
+        print(f"Viga tehingu kustutamisel Firebase'ist: {e}")
+        return jsonify({"success": False, "message": f"Kustutamine ebaõnnestus: {e}"}), 500
+
+
+
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
 @app.route("/chart-data")
 def chart_data():
