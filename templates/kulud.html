@@ -74,9 +74,12 @@
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
                                 <td>{{ entry.amount }}</td>
+                                <td class="button-cell">
+                                    <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')">Kustuta</button>
+                                </td>
                             </tr>
                             {% endfor %}
-                        </tbody>
+                        </tbody>                        
                     </table>
                     {% else %}
                     <p>Tehinguid pole salvestatud.</p>

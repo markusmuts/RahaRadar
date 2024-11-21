@@ -42,13 +42,12 @@ body, html {
     background: white;
     border-radius: 12px;
     border-width: 1px;
-
-    &:hover {
-        background: #cccccc;
-        cursor: pointer;
-    }
 }
 
+.menu:hover {
+    background: #cccccc;
+    cursor: pointer;
+}
 .main {
     display: flex;
     width: 100%;
@@ -204,4 +203,19 @@ p {
     td {
         padding: 8px;
     }
+
+.button-cell .delete-button {
+    position: absolute !important;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 5px 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: darkred;
 }

@@ -56,6 +56,26 @@ function loadGoogleCharts() {
   };
   document.head.appendChild(script);
 }
+function deleteEntry(entryId) {
+    if (confirm("Kas olete kindel, et soovite selle tehingu kustutada?")) {
+        fetch(`/delete_entry/${entryId}`, {
+            method: "DELETE",
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to update the table
+                } else {
+                    alert("Kustutamine ebaõnnestus: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Kustutamisel tekkis viga.");
+            });
+    }
+}
 
 // Initialize Google Charts on page load
 loadGoogleCharts();
