@@ -43,18 +43,44 @@
                     <p style="width: 64.24px;"></p>
                 </div>
             </div>
-            <div class="form_container"> <!-- Added container for the form -->
+            
+            <div <h1>Kulud ja Tulud</h1>
+
                 <form id="transactionForm" action="{{ url_for('add_data') }}" method="POST">
-                    <input type="text" id="date" name="date" placeholder="DD.MM.YYYY" required size="6px">
+                    <input type="text" id="date" name="date" placeholder="DD.MM.YYYY" required>
                     <input type="text" id="payer" name="payer" placeholder="Saaja / Maksja" required>
                     <input type="text" id="category" name="category" placeholder="Kategooria" required>
-                    <input type="number" id="amount" name="amount" placeholder="Kulu" required>
+                    <input type="number" id="amount" name="amount" placeholder="Kulu €" required>
                     <button type="submit">Lisa tehing</button>
                 </form>
+            
+                <h2>Salvestatud tehingud</h2>
+
+                    {% if data and data|length > 0 %}
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>Kuupäev</th>
+                                <th>Saaja / Maksja</th>
+                                <th>Kategooria</th>
+                                <th>Summa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in data %}
+                            <tr>
+                                <td>{{ entry.date }}</td>
+                                <td>{{ entry.payer }}</td>
+                                <td>{{ entry.category }}</td>
+                                <td>{{ entry.amount }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>Tehinguid pole salvestatud.</p>
+                    {% endif %}
             </div>
-            </div>
-            <div class="list_bottom">
-                <p>test</p>
             </div>
         </div>
     </div>

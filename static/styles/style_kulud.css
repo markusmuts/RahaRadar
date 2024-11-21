@@ -137,7 +137,71 @@ body, html {
     display: flex;
     justify-content: center; /* Centers horizontally */
     align-items: center; /* Centers vertically */
-    height: 100%; /* Adjust as needed to match parent height */
+    height: 200%; /* Adjust as needed to match parent height */
     padding: 20px; /* Optional padding */
+    gap: 0px;
 }
 
+table {
+    width: 95%;
+    border-collapse: collapse; /* Ensures borders don't double */
+    margin-top: 20px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 16px;
+    background-color: #f9f9f9; /* Light background for contrast */
+    border-radius: 8px;
+    overflow: hidden; /* Rounds the corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+thead {
+    background-color: #4CAF50; /* Green header */
+    color: white;
+    text-align: left;
+}
+
+thead th {
+    padding: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+tbody tr {
+    transition: background-color 0.3s; /* Smooth hover effect */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2; /* Zebra stripes for even rows */
+}
+
+tbody tr:hover {
+    background-color: #d1ffd1; /* Highlight on hover */
+}
+
+td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #ddd; /* Row separators */
+}
+
+td:last-child {
+    text-align: right; /* Align numbers to the right */
+}
+
+p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    margin-top: 10px;
+    color: #333;
+    text-align: center;
+}
+
+@media screen and (max-width: 600px) {
+    table {
+        font-size: 14px; /* Adjust font size for smaller screens */
+    }
+
+    td {
+        padding: 8px;
+    }
+}

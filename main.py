@@ -45,7 +45,12 @@ app.secret_key = "supersecretkey"
 
 @app.route("/")
 def main_page():
-    return render_template("kulud.html")
+    entries = db.child("entries").get()
+    if entries.val():
+        data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
+    else:
+        data_list = []
+    return render_template("kulud.html", data=data_list)
 
 # Funktsioon, mis lisab tehingu Firebase andmebaasi
 def add_transaction_to_firebase(date, payer, category, amount):
@@ -62,6 +67,7 @@ def add_transaction_to_firebase(date, payer, category, amount):
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data", methods=["POST"])
 def add_data():
+    # Get form inputs
     date = request.form.get("date")
     payer = request.form.get("payer")
     category = request.form.get("category")
@@ -69,28 +75,37 @@ def add_data():
     
     if date and payer and category and amount:
         try:
+            # Push data to Firebase
             db.child("entries").push({
                 "date": date,
                 "payer": payer,
                 "category": category,
-                "amount": float(amount)  # Kogus teisendatakse ujukomaarvuks
+                "amount": float(amount)  # Convert amount to float
             })
-            flash("Andmed edukalt lisatud!")
+            flash("Andmed edukalt lisatud!")  # Feedback to user
         except Exception as e:
             print("Viga andmete lisamisel Firebase'i:", e)
             flash("Tekkis viga andmete lisamisel Firebase'i.")
     else:
-        flash("Palun täitke kõik väljad.")
+        flash("Palun täitke kõik väljad.")  # Validation feedback
     
+    # Redirect back to the main page
     return redirect(url_for("main_page"))
 
+
 # Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel
+
 @app.route("/get_data")
 def get_data():
     entries = db.child("entries").get()
-    
-    data_list = entries.val() if entries.val() else []
-    
+    if entries.val():
+        data_list = [
+            {"id": key, **entry} for key, entry in entries.val().items()
+        ]  # Firebase-i andmed sõnastikuks
+    else:
+
+        data_list = []
+
     return render_template("kulud.html", data=data_list)
 
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
