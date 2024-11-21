@@ -36,17 +36,9 @@
             <div class="list_upper">
                 <p>Tehingute ajalugu</p>
                 <p style="font-size: 16px; padding-bottom: 20px;">Periood: teadmata</p>
-                <div class="list_table">
-                    <p style="margin-left: 10px;">Kuupäev</p>
-                    <p>Saaja / Maksja</p>
-                    <p>Kategooria</p>
-                    <p>Kulu</p>
-                    <p style="width: 64.24px;"></p>
-                </div>
             </div>
             
-            <div <h1>Kulud ja Tulud</h1>
-
+            <div>
                 <form id="transactionForm" action="{{ url_for('add_data') }}" method="POST">
                     <input type="text" id="date" name="date" placeholder="DD.MM.YYYY" required>
                     <input type="text" id="payer" name="payer" placeholder="Saaja / Maksja" required>
@@ -54,11 +46,8 @@
                     <input type="number" id="amount" name="amount" placeholder="Kulu €" required>
                     <button type="submit">Lisa tehing</button>
                 </form>
-            
-                <h2>Salvestatud tehingud</h2>
-
                     {% if data and data|length > 0 %}
-                    <table border="1">
+                    <table border="1px">
                         <thead>
                             <tr>
                                 <th>Kuupäev</th>
@@ -73,15 +62,17 @@
                                 <td>{{ entry.date }}</td>
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
-                                <td>{{ entry.amount }}</td>
+                                <td>{{ entry.amount }} €</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     {% else %}
-                    <p>Tehinguid pole salvestatud.</p>
+                    <p>Tehinguid pole selle kuu jaoks lisatud.</p>
                     {% endif %}
             </div>
+            <div class="list_bottom">
+                <p>Tere</p>
             </div>
         </div>
     </div>
