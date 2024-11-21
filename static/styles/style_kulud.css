@@ -204,8 +204,9 @@ p {
         padding: 8px;
     }
 
-.button-cell .delete-button {
-    position: absolute !important;
+/* Specific styling for delete button inside the table */
+table .button-cell .delete-button {
+    position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
@@ -216,6 +217,6 @@ p {
     cursor: pointer;
 }
 
-.delete-button:hover {
+table .delete-button:hover {
     background-color: darkred;
 }
