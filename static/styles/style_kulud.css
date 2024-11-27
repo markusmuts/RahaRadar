@@ -249,3 +249,62 @@ td {
     transform: scale(0.95); /* Shrink effect */
 }
 
+/* Modal background styling */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure the modal is on top of all other content */
+}
+
+/* Modal content box */
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Optional: adds a shadow for better visibility */
+    max-width: 400px; /* Limit the width of the modal */
+    width: 90%; /* Responsive width */
+}
+
+/* Dropdown and input styling inside the modal */
+.modal-content select,
+.modal-content input {
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%; /* Full width for better usability */
+    box-sizing: border-box; /* Prevents overflow due to padding */
+}
+
+/* Buttons inside the modal */
+.modal-content button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background: #007bff; /* Primary button color */
+    color: white;
+    transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+    background: #0056b3; /* Darker on hover */
+}
+
+.modal-content button:last-of-type {
+    background: #6c757d; /* Secondary button color for "Close" */
+}
+
+.modal-content button:last-of-type:hover {
+    background: #5a6268; /* Darker on hover */
+}

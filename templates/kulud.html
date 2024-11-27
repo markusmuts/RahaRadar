@@ -24,7 +24,30 @@
                 <img src="{{ url_for('static', filename='images/pilt.png')}}" style="height: 30px; width: 30px; align-self: center; padding-right: 10px;">
                 <p class="hello_message">Tere, Peeter!</p>
             </div>
-            <button type="menu" class="menu">Vaheta Kuu/Aasta</button>
+            <button type="button" class="menu" onclick="showMonthYearSelector()">Vaheta Kuu/Aasta</button>
+
+            <div id="monthYearModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Vali Kuu ja Aasta</h2>
+                    <select id="monthSelector">
+                        <option value="1">Jaanuar</option>
+                        <option value="2">Veebruar</option>
+                        <option value="3">Märts</option>
+                        <option value="4">Aprill</option>
+                        <option value="5">Mai</option>
+                        <option value="6">Juuni</option>
+                        <option value="7">Juuli</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktoober</option>
+                        <option value="11">November</option>
+                        <option value="12">Detsember</option>
+                    </select>
+                    <input type="number" id="yearSelector" placeholder="Aasta (nt 2024)" min="2000" max="2100">
+                    <button onclick="filterByMonthYear()">Filtreeri</button>
+                    <button onclick="closeMonthYearSelector()">Sulge</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="main">
@@ -48,7 +71,7 @@
                     <button type="submit">Lisa tehing</button>
                 </form>
                     {% if data and data|length > 0 %}
-                    <table border="1px">
+                    <table border= 1px id ="transactionTable">
                         <thead>
                             <tr>
                                 <th>Kuupäev</th>
@@ -64,7 +87,7 @@
                                 <td>{{ entry.date }}</td>
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
-                                <td>{{ entry.amount }}</td>
+                                <td class="amount">{{ entry.amount }}</td>
                                 <td class="button-cell">
                                     <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')">Kustuta</button>
                                 </td>
@@ -72,6 +95,9 @@
                             {% endfor %}
                         </tbody>    
                     </table>
+                    <div>
+                        <p>SUMMA: <span id="totalSum">0</span> €</p>
+                    </div>
                     {% else %}
                     <p>Tehinguid pole selle kuu jaoks lisatud.</p>
                     {% endif %}
