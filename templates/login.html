@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="et">
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/style_login.css')}}">
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png')}}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="login_box">
+            <img src="{{ url_for('static', filename='images/raharadar.png')}}">
+            <form method="POST" action="/login">
+                <input type="email" placeholder="Email" name="email" id="email" required>
+                <br>
+                <input type="password" placeholder="Password" name="password" id="password" required>
+                <br>
+                <button type="submit">LOGIN</button>
+            </form>
+            {% if error_message %}
+            <script>
+                alert("{{ error_message }}");
+            </script>
+            {% endif %}
+        </div>
+    </body>
+</html>

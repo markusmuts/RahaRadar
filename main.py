@@ -14,9 +14,7 @@
 #
 ##################################################
 
-
-from flask import Flask, render_template
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import pyrebase
 import pandas as pd
 import os
@@ -44,13 +42,40 @@ app.config["UPLOAD_FOLDER"] = "uploads"
 app.secret_key = "supersecretkey"
 
 @app.route("/")
-def main_page():
-    entries = db.child("entries").get()
-    if entries.val():
-        data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
-    else:
-        data_list = []
-    return render_template("kulud.html", data=data_list)
+def main():
+    if "user" in session:
+        return redirect(url_for("kulud"))
+    return redirect(url_for("login"))
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error_message = None
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+            session["user"] = user 
+            return redirect(url_for("kulud"))
+        except:
+            error_message = "Invalid credentials. Please try again."
+    return render_template("login.html", error_message=error_message)
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect(url_for("login"))
+
+@app.route("/kulud")
+def kulud():
+    if "user" in session:
+        entries = db.child("entries").get()
+        if entries.val():
+            data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
+        else:
+            data_list = []
+        return render_template("kulud.html", data=data_list)
+    return redirect(url_for("login"))
 
 # Funktsioon, mis lisab tehingu Firebase andmebaasi
 def add_transaction_to_firebase(date, payer, category, amount):
