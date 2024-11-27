@@ -14,7 +14,6 @@
 #
 ##################################################
 
-
 from flask import Flask, render_template
 from flask import Flask, render_template, request, redirect, url_for, flash
 import pyrebase
