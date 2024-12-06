@@ -8,7 +8,7 @@
 #
 # Autorid: Markus Muts, Randel Johannes Reeder
 #
-# mõningane eeskuju: Eelmise aasta projekt (Koduse eelarve haldamise programm), isiklik vajadus taolise programmi järele
+# Mõningane eeskuju: Eelmise aasta projekt (Koduse eelarve haldamise programm), isiklik vajadus taolise programmi järele
 #
 # Lisakommentaar (nt käivitusjuhend): Main branchis on fail nimega "ülespanek.md", milles on juhend programmi käivitamiseks
 #
@@ -115,7 +115,7 @@ def add_data():
         flash("Palun täitke kõik väljad.")  # Validation feedback
     
     # Redirect back to the main page
-    return redirect(url_for("main_page"))
+    return redirect(url_for("kulud"))
 
 
 # Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel

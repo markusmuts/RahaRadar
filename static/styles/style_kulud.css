@@ -3,6 +3,7 @@
     font-optical-sizing: auto;
     font-weight: 350;
     font-style: normal;
+    overflow-x: hidden;
 }
 
 body, html {
@@ -71,9 +72,15 @@ body, html {
         color: #4B4B4B;
     }
 }
+.donutchart {
+    overflow: hidden !important;
+}
 
 .list {
-    width: 100%;
+    width: calc(100% - 520px);
+    display: flex;
+    flex-direction: column;
+    position: relative;
     height: auto;
     margin-left: 20px;
     background: white;
@@ -81,6 +88,7 @@ body, html {
 }
 
 .list_upper {
+    overflow-y: hidden;
     p {
         display: flex;
         justify-content: center;
@@ -130,12 +138,26 @@ body, html {
 }
 
 .list_bottom {
-    position: relative;
+    order: 1;
+    display: flex;
+    justify-content: end;
     height: fit-content;
+    border-top: 2px solid gray;
+    width: 100%;
     margin-top: auto;
-    width: 98%;
+    padding-right: 50px;
     padding: 10px;
 
+    p {
+        overflow: hidden;
+        font-weight: bold;
+        font-size: 20px;
+        margin-right: 3%;
+    }
+
+    span {
+        color: red;
+    }
 }
 
 .form_container {
@@ -147,23 +169,29 @@ body, html {
     gap: 0px;
 }
 
+.wrapper_table {
+    overflow-y: auto;
+}
+
 table {
     width: 97%;
     position: relative;
+    overflow-y: scroll;
     left: 1.25%;
     right: 1.25%;
     border-collapse: collapse; /* Ensures borders don't double */
     margin-top: 20px;
     background-color: #f9f9f9; /* Light background for contrast */
-    border-radius: 8px;
     overflow: hidden; /* Rounds the corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 thead {
-    background-color: #4CAF50; /* Green header */
-    color: white;
+    background-color: #dad9d9;
+    color: #272829;
     text-align: center;
+    border: 1px solid gray;
+    border-radius: 8px;
 }
 
 thead th {
@@ -177,12 +205,9 @@ tbody tr {
     transition: background-color 0.3s; /* Smooth hover effect */
 }
 
-tbody tr:nth-child(even) {
-    background-color: #f2f2f2; /* Zebra stripes for even rows */
-}
 
 tbody tr:hover {
-    background-color: #d1ffd1; /* Highlight on hover */
+    background-color: #ececec; /* Highlight on hover */
 }
 
 td {
@@ -228,25 +253,26 @@ td {
 
 /* Independent delete button */
 .delete-button {
-    background-color: #ff4d4d; /* Red button color */
-    color: white; /* White text */
+    color: gray; /* White text */
     border: none; /* No border */
     border-radius: 5px; /* Rounded corners */
     padding: 8px 12px; /* Button size */
-    font-size: 14px; /* Font size */
-    font-weight: 600; /* Bold text */
     cursor: pointer; /* Pointer cursor on hover */
     transition: background-color 0.3s, transform 0.2s; /* Smooth hover effects */
 }
 
 .delete-button:hover {
-    background-color: #ff6666; /* Lighter red on hover */
+    background-color: #c9c8c8; /* Lighter red on hover */
     transform: scale(1.05); /* Slight zoom on hover */
 }
 
-.delete-button:active {
-    background-color: #cc0000; /* Dark red on click */
-    transform: scale(0.95); /* Shrink effect */
+.modify-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #272829;
+    scale: 2;
+
 }
 
 /* Modal background styling */

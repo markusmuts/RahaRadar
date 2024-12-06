@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>RahaRadar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style_kulud.css')}}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png')}}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +54,7 @@
     <div class="main">
         <div class = "chart_box">
             <p>Kulude analüüs</p>
-            <div id="donutchart" style="width: 500px; height: 500px;"></div>
+            <div id="donutchart" style="width: 500px; height: 490px;"></div>
 
         </div>
         <div class="list">
@@ -70,15 +71,16 @@
                     <input type="number" id="amount" name="amount" placeholder="Kulu €" required>
                     <button type="submit">Lisa tehing</button>
                 </form>
+                <div class = "wrapper_table">
                     {% if data and data|length > 0 %}
-                    <table border= 1px id ="transactionTable">
+                    <table id ="transactionTable">
                         <thead>
                             <tr>
                                 <th>Kuupäev</th>
                                 <th>Saaja / Maksja</th>
                                 <th>Kategooria</th>
                                 <th>Summa</th>
-                                <th></th>
+                                <th><button class="modify-button"><i class="fa fa-ellipsis-h "></i></button></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,23 +89,21 @@
                                 <td>{{ entry.date }}</td>
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
-                                <td class="amount">{{ entry.amount }}</td>
+                                <td class="amount">{{ entry.amount }} €</td>
                                 <td class="button-cell">
-                                    <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')">Kustuta</button>
+                                    <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')"><i class="fa fa-trash"></i></button>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>    
                     </table>
-                    <div>
-                        <p>SUMMA: <span id="totalSum">0</span> €</p>
-                    </div>
                     {% else %}
                     <p>Tehinguid pole selle kuu jaoks lisatud.</p>
                     {% endif %}
+                </div>
             </div>
             <div class="list_bottom">
-                <p>Tere</p>
+                <p>Kokku: <span id="totalSum">0 €</span></p>
             </div>
         </div>
     </div>
