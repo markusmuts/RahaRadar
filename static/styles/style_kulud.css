@@ -181,16 +181,16 @@ table {
     right: 1.25%;
     border-collapse: collapse; /* Ensures borders don't double */
     margin-top: 20px;
-    background-color: #f9f9f9; /* Light background for contrast */
+    background-color: #ffffff; /* Light background for contrast */
     overflow: hidden; /* Rounds the corners */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 thead {
-    background-color: #dad9d9;
+    background-color: #f3f3f3;
     color: #272829;
     text-align: center;
-    border: 1px solid gray;
+    border: 2px solid rgb(204, 204, 204);
     border-radius: 8px;
 }
 
@@ -207,7 +207,7 @@ tbody tr {
 
 
 tbody tr:hover {
-    background-color: #ececec; /* Highlight on hover */
+    background-color: #fafafa; /* Highlight on hover */
 }
 
 td {
