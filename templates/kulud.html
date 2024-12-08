@@ -54,7 +54,7 @@
     <div class="main">
         <div class = "chart_box">
             <p>Kulude analüüs</p>
-            <div id="donutchart" style="width: 500px; height: 490px;"></div>
+            <div id="donutchart" style="width: 500px; height: 500px;"></div>
 
         </div>
         <div class="list">
@@ -86,7 +86,7 @@
                         <tbody>
                             {% for entry in data %}
                             <tr>
-                                <td>{{ entry.date }}</td>
+                                <td >{{ entry.date }}</td>
                                 <td>{{ entry.payer }}</td>
                                 <td>{{ entry.category }}</td>
                                 <td class="amount">{{ entry.amount }} €</td>
@@ -103,7 +103,7 @@
                 </div>
             </div>
             <div class="list_bottom">
-                <p>Kokku: <span id="totalSum">0 €</span></p>
+                <p>Kokku: <span >{{ total_sum }} €</span></p>
             </div>
         </div>
     </div>

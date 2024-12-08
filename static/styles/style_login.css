@@ -59,6 +59,10 @@ body, html {
         cursor: pointer;
     }
 
+    .error_message {
+        color: red;
+        text-align: center;
+    }
 
 
 }

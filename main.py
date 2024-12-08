@@ -22,7 +22,7 @@ from LHV import KuludTulud as LHV_KuludTulud
 from SEB import KuludTulud as SEB_KuludTulud
 from SWEDBANK import KuludTulud as SWED_KuludTulud
 from flask import jsonify
-
+from secrets import token_hex
 # Ei saa peita oma config-i kuna muidu programm ei töötaks.
 config = {
   "apiKey": "AIzaSyCewjkjV-23sjbKG2QpNQfxo2SN9lMu2oU",
@@ -37,9 +37,11 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 db = firebase.database()
 
+db.child("users")
+
 app = Flask(__name__, static_folder='static')
 app.config["UPLOAD_FOLDER"] = "uploads"
-app.secret_key = "supersecretkey"
+app.secret_key = token_hex(24)
 
 @app.route("/")
 def main():
@@ -55,11 +57,18 @@ def login():
         password = request.form["password"]
         try:
             user = auth.sign_in_with_email_and_password(email, password)
-            session["user"] = user 
+            uid = user['localId']
+            session['user'] = uid
+            get_data()
             return redirect(url_for("kulud"))
-        except:
-            error_message = "Invalid credentials. Please try again."
+        except Exception as e:
+            print(e)
+            error_message = "An error occurred. Please try again."
+            if "" in str(e):
+                error_message = "Invalid credentials. Please try again."
+
     return render_template("login.html", error_message=error_message)
+        
 
 @app.route("/logout")
 def logout():
@@ -69,12 +78,22 @@ def logout():
 @app.route("/kulud")
 def kulud():
     if "user" in session:
-        entries = db.child("entries").get()
+        uid = session["user"]
+        entries = db.child("users").child(uid).child("expenses").get()
+        expenses = db.child("users").child(uid).child("expenses").get().val()
+        total_expenses = 0
+
+        if expenses:
+            for expense_id, expense in expenses.items():
+                total_expenses += expense.get("amount", 0)
+        else:
+            total_expenses = 0
+
         if entries.val():
             data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
         else:
             data_list = []
-        return render_template("kulud.html", data=data_list)
+        return render_template("kulud.html", data=data_list, total_sum = total_expenses)
     return redirect(url_for("login"))
 
 # Funktsioon, mis lisab tehingu Firebase andmebaasi
@@ -85,9 +104,21 @@ def add_transaction_to_firebase(date, payer, category, amount):
         "category": category,         
         "amount": amount              
     }
-    
-    db.child("entries").push(transaction_data)
+    uid = session["user"]
+    db.child("users").child(uid).push(transaction_data)
     print("Tehing lisatud Firebase'i:", transaction_data)
+
+def sum_expenses():
+    uid = session["user"]
+    expenses = db.child("users").child(uid).child("expenses").get().val()
+    total_expenses = 0
+
+    if expenses:
+        for expense_id, expense in expenses.items():
+            total_expenses += expense.get("amount", 0)
+
+    return render_template("kulud.html", total_sum = total_expenses)
+    
 
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data", methods=["POST"])
@@ -101,7 +132,8 @@ def add_data():
     if date and payer and category and amount:
         try:
             # Push data to Firebase
-            db.child("entries").push({
+            uid = session["user"]
+            db.child("users").child(uid).child("expenses").push({
                 "date": date,
                 "payer": payer,
                 "category": category,
@@ -119,16 +151,15 @@ def add_data():
 
 
 # Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel
-
 @app.route("/get_data")
 def get_data():
-    entries = db.child("entries").get()
+    uid = session["user"]
+    entries = db.child("users").child(uid).child("expenses").get()
     if entries.val():
         data_list = [
             {"id": key, **entry} for key, entry in entries.val().items()
         ]  # Firebase-i andmed sõnastikuks
     else:
-
         data_list = []
 
     return render_template("kulud.html", data=data_list)
@@ -137,8 +168,9 @@ def get_data():
 @app.route("/delete_entry/<entry_id>", methods=["DELETE"])
 def delete_entry(entry_id):
     try:
+        uid = session["user"]
         # Attempt to delete the entry in Firebase
-        db.child("entries").child(entry_id).remove()
+        db.child("users").child(uid).child("expenses").child(entry_id).remove()
         return jsonify({"success": True, "message": "Tehing edukalt kustutatud!"}), 200
     except Exception as e:
         # Log the exact error for debugging
@@ -150,7 +182,8 @@ def delete_entry(entry_id):
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
 @app.route("/chart-data")
 def chart_data():
-    entries = db.child("entries").get()
+    uid = session["user"]
+    entries = db.child("users").child(uid).child("expenses").get()
     
     data = [["Category", "Amount"]]  
     if entries.val():
