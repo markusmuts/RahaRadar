@@ -238,6 +238,8 @@ function deleteEntry(entryId) {
     }
 }
 
+
+
 function modifyEntry(entryId) {
     const entryDate = document.getElementById('entryDate').value;
     const entryPayer = document.getElementById('entryPayer').value;
