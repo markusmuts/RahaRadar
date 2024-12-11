@@ -15,6 +15,7 @@
 ##################################################
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import csv
 import pyrebase
 import pandas as pd
 import os
@@ -41,6 +42,7 @@ db.child("users")
 
 app = Flask(__name__, static_folder='static')
 app.config["UPLOAD_FOLDER"] = "uploads"
+app.config['ALLOWED_EXTENSIONS'] = {'csv'}
 app.secret_key = token_hex(24)
 
 @app.route("/")
@@ -118,12 +120,14 @@ def sum_expenses():
             total_expenses += expense.get("amount", 0)
 
     return render_template("kulud.html", total_sum = total_expenses)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
     
 
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data", methods=["POST"])
 def add_data():
-    # Get form inputs
     date = request.form.get("date")
     payer = request.form.get("payer")
     category = request.form.get("category")
@@ -131,20 +135,19 @@ def add_data():
     
     if date and payer and category and amount:
         try:
-            # Push data to Firebase
             uid = session["user"]
             db.child("users").child(uid).child("expenses").push({
                 "date": date,
                 "payer": payer,
                 "category": category,
-                "amount": float(amount)  # Convert amount to float
+                "amount": float(amount)  
             })
-            flash("Andmed edukalt lisatud!")  # Feedback to user
+            flash("Andmed edukalt lisatud!")  
         except Exception as e:
             print("Viga andmete lisamisel Firebase'i:", e)
             flash("Tekkis viga andmete lisamisel Firebase'i.")
     else:
-        flash("Palun täitke kõik väljad.")  # Validation feedback
+        flash("Palun täitke kõik väljad.")  
     
     # Redirect back to the main page
     return redirect(url_for("kulud"))
@@ -193,60 +196,34 @@ def chart_data():
     return jsonify(data)  
 
 # Funktsioon CSV-faili üleslaadimiseks ja töötlemiseks sõltuvalt valitud pangast
-@app.route("/upload_csv", methods=["POST"])
+@app.route('/upload_csv', methods=['POST'])
 def upload_csv():
-    bank = request.form.get("bank")  # Saadakse vormilt valitud pank
+    file = request.files.get('csvFile')
+    if not file:
+        flash("No file uploaded", "error")
+        return redirect(url_for("kulud"))
 
-    # Kontrollib, kas kasutaja laeb faili üles sõltuvalt valitud pangast
-    if bank == "LHV":
-        file = request.files.get("file_lhv")
-        if not file or not file.filename.endswith(".csv"):
-            flash("Palun laadige üles sobiv LHV CSV-fail.")
-            return redirect(url_for("main_page"))
-        
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-        file.save(file_path)
-        
-        # LHV-faili töötlemine
-        result = LHV_KuludTulud(file_path)
-        
-        # Kustutab faili pärast töötlemist
-        os.remove(file_path)
-    
-    elif bank in ["SEB", "SWEDBANK"]:
-        income_file = request.files.get("file_income")
-        expenses_file = request.files.get("file_expenses")
-        
-        if not income_file or not income_file.filename.endswith(".csv"):
-            flash("Palun laadige üles sobiv tulude CSV-fail.")
-            return redirect(url_for("main_page"))
-        
-        if not expenses_file or not expenses_file.filename.endswith(".csv"):
-            flash("Palun laadige üles sobiv kulude CSV-fail.")
-            return redirect(url_for("main_page"))
-        
-        # Salvestab failid ajutiselt
-        income_file_path = os.path.join(app.config["UPLOAD_FOLDER"], income_file.filename)
-        expenses_file_path = os.path.join(app.config["UPLOAD_FOLDER"], expenses_file.filename)
-        income_file.save(income_file_path)
-        expenses_file.save(expenses_file_path)
-        
-        # Töötleb failid sõltuvalt pangast
-        if bank == "SEB":
-            result = SEB_KuludTulud(income_file_path, expenses_file_path)
-        elif bank == "SWEDBANK":
-            result = SWED_KuludTulud(income_file_path, expenses_file_path)
-        
-        # Kustutab failid pärast töötlemist
-        os.remove(income_file_path)
-        os.remove(expenses_file_path)
-    
-    else:
-        flash("Palun valige sobiv pank.")
-        return redirect(url_for("main_page"))
-    
-    # Kuvab tulemuse results.html lehel
-    return render_template("results.html", result=result)
+    # Parse the CSV file
+    try:
+        # Load the file into a DataFrame
+        data = pd.read_csv(file)
+
+        # Ensure the required columns are present
+        required_columns = {'date', 'payer', 'category', 'amount'}
+        if not required_columns.issubset(data.columns):
+            flash(f"CSV must contain columns: {required_columns}", "error")
+            return redirect(url_for("kulud"))
+
+        # Print the data to the console for debugging
+        print(data)
+
+        # Display the content of the CSV file on a new page for debugging
+        return render_template("csv_preview.html", table=data.to_html(index=False))
+    except Exception as e:
+        flash(f"Error processing CSV: {str(e)}", "error")
+        return redirect(url_for("kulud"))
+
+
 
 if __name__ == "__main__":
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):

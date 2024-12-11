@@ -1,12 +1,11 @@
 // Load Google Charts and initialize the chart
-// Load Google Charts and initialize the chart
 function loadGoogleCharts(callback) {
     const script = document.createElement("script");
     script.src = "https://www.gstatic.com/charts/loader.js";
     script.onload = () => {
         console.log("Google Charts script loaded successfully.");
         google.charts.load("current", { packages: ["corechart", "piechart"] });
-        google.charts.setOnLoadCallback(callback); // Ensure callback runs when the library is fully loaded
+        google.charts.setOnLoadCallback(callback);
     };
     script.onerror = () => {
         console.error("Failed to load Google Charts script.");
@@ -14,23 +13,18 @@ function loadGoogleCharts(callback) {
     document.head.appendChild(script);
 }
 
-// Function to initialize the chart (runs once Google Charts is loaded)
+// Function to initialize the chart
 function initializeChart() {
-    console.log("Initializing Chart...");
-
-    // Ensure Google Charts is loaded and available
     if (typeof google === "undefined" || typeof google.visualization === "undefined") {
         console.error("Google Charts library not available.");
         return;
     }
-
-    console.log("Google Charts loaded and initialized.");
-    updateChartData(); // Proceed to update and draw the chart
+    console.log("Google Charts initialized.");
+    updateChartData();
 }
 
-// Function to update chart data based on the table's filtered rows
+// Function to update chart data
 function updateChartData() {
-    // Ensure Google Charts is loaded before proceeding
     if (typeof google === "undefined" || typeof google.visualization === "undefined") {
         console.error("Google Charts library not loaded correctly.");
         return;
@@ -38,110 +32,55 @@ function updateChartData() {
 
     const selectedMonth = localStorage.getItem('selectedMonth');
     const selectedYear = localStorage.getItem('selectedYear');
-    
+
     if (selectedMonth && selectedYear) {
-        filterByMonthYear(); // Apply the month/year filter
+        filterByMonthYear();
     } else {
-        // If no month/year selected, show all rows
+        console.warn("No month/year selected. Displaying all rows.");
         const rows = document.querySelectorAll('#transactionTable tbody tr');
         rows.forEach(row => row.style.display = '');
-        const processedChartData = preprocessChartData(Array.from(rows).map(row => {
-            const category = row.querySelector('.category')?.textContent.trim();
-            const amount = parseFloat(row.querySelector('.amount')?.textContent || 0);
-            return category && !isNaN(amount) ? [category, amount] : null;
-        }).filter(Boolean));
-        drawChart(processedChartData);  // Call drawChart after data is prepared
+        const processedChartData = preprocessChartData(getRowData(rows));
+        if (processedChartData.length <= 1) {
+            console.warn("No valid data found to display in the chart.");
+        }
+        drawChart(processedChartData);
     }
 }
 
-// Preprocess the chart data (grouping by category)
+// Function to preprocess chart data
 function preprocessChartData(rawData) {
-    console.log("Raw data received by preprocessChartData:", rawData);
-    const categoryMap = new Map(); // Use category as the key
+    const categoryMap = new Map();
 
-    rawData.forEach(row => {
-        if (!Array.isArray(row) || row.length < 2) {
-            console.error("Skipping invalid row. Expected array with at least 2 elements, got:", row);
-            return;
+    rawData.forEach(([category, value]) => {
+        if (category && typeof value === "number" && value > 0) {
+            categoryMap.set(category, (categoryMap.get(category) || 0) + value);
         }
-
-        const [category, value] = row;
-        if (!category || typeof value !== "number") {
-            console.error("Skipping row with invalid data:", row);
-            return;
-        }
-
-        categoryMap.set(category, (categoryMap.get(category) || 0) + value);
     });
 
-    console.log("Processed categoryMap:", Array.from(categoryMap.entries()));
-    const chartData = [["Category", "Amount"], ...Array.from(categoryMap.entries())];
-    console.log("Final chartData:", chartData);
-    return chartData;
+    if (categoryMap.size === 0) {
+        console.warn("Processed data is empty. Ensure rows have valid categories and amounts.");
+    }
+
+    return [["Category", "Amount"], ...Array.from(categoryMap.entries())];
 }
 
-// Function to draw the chart using Google Charts
+// Function to draw the chart
 function drawChart(chartData) {
-    if (typeof google === "undefined" || typeof google.visualization === "undefined") {
-        console.error("Google Charts not loaded.");
+    if (!chartData || chartData.length < 2) {
+        console.error("Invalid or empty chart data.", chartData);
+        document.getElementById('donutchart').innerHTML = "<p>No data available to display.</p>";
         return;
     }
 
-    console.log("Drawing Chart with Data:", chartData);
-    var data = google.visualization.arrayToDataTable(chartData);
-
-    var options = {
-        title: 'Monthly Expenses',
+    const data = google.visualization.arrayToDataTable(chartData);
+    const options = {
         pieHole: 0.4,
     };
 
-    var chart = new google.visualization.PieChart(document.getElementById('donutchart'));
+    const chart = new google.visualization.PieChart(document.getElementById('donutchart'));
     chart.draw(data, options);
+    console.log("Chart drawn successfully.", chartData);
 }
-
-// Event listener for DOM content loaded
-document.addEventListener('DOMContentLoaded', () => {
-    loadGoogleCharts(initializeChart);  // Load and initialize charts
-
-    const transactionForm = document.getElementById('transactionForm');
-    if (transactionForm) {
-        transactionForm.addEventListener('submit', (e) => {
-            setTimeout(() => {
-                const rows = document.querySelectorAll('#transactionTable tbody tr');
-                calculateTotalSum(rows);
-                const processedChartData = preprocessChartData(Array.from(rows).map(row => {
-                    const category = row.querySelector('.category')?.textContent.trim();
-                    const amount = parseFloat(row.querySelector('.amount')?.textContent || 0);
-                    return category && !isNaN(amount) ? [category, amount] : null;
-                }).filter(Boolean));
-                drawChart(processedChartData); // Draw the chart after data is processed
-            }, 100);
-        });
-    }
-
-    const storedMonth = localStorage.getItem('selectedMonth');
-    const storedYear = localStorage.getItem('selectedYear');
-
-    if (storedMonth && storedYear) {
-        document.getElementById('monthSelector').value = storedMonth;
-        document.getElementById('yearSelector').value = storedYear;
-        filterByMonthYear(); // Apply previously selected filters on page load
-    } else {
-        const rows = document.querySelectorAll('#transactionTable tbody tr');
-        rows.forEach(row => row.style.display = '');
-        document.querySelector('.list_upper p:nth-child(2)').textContent = "Periood: teadmata";
-        calculateTotalSum(rows);
-        const processedChartData = preprocessChartData(Array.from(rows).map(row => {
-            const category = row.querySelector('.category')?.textContent.trim();
-            const amount = parseFloat(row.querySelector('.amount')?.textContent || 0);
-            return category && !isNaN(amount) ? [category, amount] : null;
-        }).filter(Boolean));
-        drawChart(processedChartData);  // Draw the chart after data is processed
-    }
-});
-
-
-// Function to filter rows based on selected month and year
 function filterByMonthYear() {
     const selectedMonth = document.getElementById('monthSelector').value;
     const selectedYear = document.getElementById('yearSelector').value;
@@ -154,57 +93,128 @@ function filterByMonthYear() {
     localStorage.setItem('selectedMonth', selectedMonth);
     localStorage.setItem('selectedYear', selectedYear);
 
-    const startDate = new Date(selectedYear, selectedMonth - 1, 1); // First day of the selected month
-    const endDate = new Date(selectedYear, selectedMonth, 0); // Last day of the selected month
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+    const endDate = new Date(selectedYear, selectedMonth, 0);
 
     const rows = document.querySelectorAll('#transactionTable tbody tr');
-    const filteredRows = [];
+    let total = 0; // Initialize the total sum
 
-    rows.forEach(row => {
+    const filteredRows = Array.from(rows).filter(row => {
         const dateCell = row.cells[0]?.textContent?.trim();
-        if (!dateCell) return; // Skip invalid rows
+        if (!dateCell) {
+            console.warn('Row missing date cell:', row);
+            return false;
+        }
 
         const [day, month, year] = dateCell.split('.');
+        if (!day || !month || !year) {
+            console.warn('Invalid date format in row:', dateCell, row);
+            return false;
+        }
+
         const fullYear = parseInt(year.length === 2 ? `20${year}` : year);
         const rowDate = new Date(fullYear, month - 1, day);
 
-        if (rowDate >= startDate && rowDate <= endDate) {
-            filteredRows.push(row);
-            row.style.display = ''; // Show the row
-        } else {
-            row.style.display = 'none'; // Hide the row
+        const isVisible = rowDate >= startDate && rowDate <= endDate;
+        row.style.display = isVisible ? '' : 'none';
+
+        if (isVisible) {
+            // Include the amount in the total sum if the row is visible
+            const amountCell = row.cells[3]?.textContent || '';
+            const amount = parseFloat(amountCell.replace(/[^\d.-]/g, ''));
+            if (!isNaN(amount)) total += amount;
         }
+
+        return isVisible;
     });
 
-    document.querySelector('.list_upper p:nth-child(2)').textContent = 
-        `Periood: ${startDate.toLocaleString('et-EE', { month: 'long' })} ${selectedYear}`;
+    console.log('Filtered rows count:', filteredRows.length);
 
-    console.log("Filtered rows:", filteredRows);
+    // Update the total sum in the DOM
+    document.querySelector('.list_bottom span').textContent = `${total.toFixed(2)} €`;
 
-    const chartRows = filteredRows.map(row => {
-        const category = row.querySelector('.category')?.textContent?.trim();
-        const amountCell = row.querySelector('.amount')?.textContent || "0";
-        const amount = parseFloat(amountCell);
+    if (filteredRows.length === 0) {
+        console.warn('No rows match the selected month/year.');
+    }
 
-        if (!category || isNaN(amount)) {
-            console.warn("Skipping invalid row:", row);
-            return null;
-        }
-
-        return [category, amount];
-    }).filter(row => row !== null); // Remove invalid rows
-
+    const chartRows = getRowData(filteredRows);
+    console.log('Chart rows:', chartRows);
     const processedChartData = preprocessChartData(chartRows);
-    drawChart(processedChartData);
+    if (processedChartData.length <= 1) {
+        console.warn('No valid data available for the selected range.');
+        document.getElementById('donutchart').innerHTML = "<p>Pole andmeid antud kuu kohta.</p>";
+    } else {
+        drawChart(processedChartData);
+    }
+
     closeMonthYearSelector();
 }
 
-// Show month/year selector modal
+
+
+// Helper to extract row data
+function getRowData(rows) {
+    return Array.from(rows).map(row => {
+        // Extract the category from the 3rd cell (adjust index as needed)
+        const categoryCell = row.cells[2]; // Assuming category is in the 3rd cell
+        const category = categoryCell ? categoryCell.textContent.trim() : null;
+
+        // Extract the amount from the 4th cell
+        const amountCell = row.cells[3]; // Assuming amount is in the 4th cell
+        let amount = amountCell ? amountCell.textContent.replace(/[^\d.-]/g, '').trim() : null; // Remove non-numeric characters
+        amount = parseFloat(amount); // Convert to a number
+
+        if (!category || isNaN(amount)) {
+            console.warn("Invalid row data skipped.", row);
+            return null;
+        }
+        return [category, amount];
+    }).filter(Boolean);
+}
+
+
+
+// Event listener for DOM content loaded
+document.addEventListener('DOMContentLoaded', () => {
+    loadGoogleCharts(initializeChart);
+
+    const transactionForm = document.getElementById('transactionForm');
+    if (transactionForm) {
+        transactionForm.addEventListener('submit', () => {
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#transactionTable tbody tr');
+                const processedChartData = preprocessChartData(getRowData(rows));
+                if (processedChartData.length <= 1) {
+                    console.warn("No valid data available after form submission.");
+                }
+                drawChart(processedChartData);
+            }, 100);
+        });
+    }
+
+    const storedMonth = localStorage.getItem('selectedMonth');
+    const storedYear = localStorage.getItem('selectedYear');
+
+    if (storedMonth && storedYear) {
+        document.getElementById('monthSelector').value = storedMonth;
+        document.getElementById('yearSelector').value = storedYear;
+        filterByMonthYear();
+    } else {
+        const rows = document.querySelectorAll('#transactionTable tbody tr');
+        const processedChartData = preprocessChartData(getRowData(rows));
+        if (processedChartData.length <= 1) {
+            console.warn("No valid data available on initial load.");
+        }
+        drawChart(processedChartData);
+    }
+});
+
+// Show and hide modal for selecting month and year
 function showMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'flex';
 }
 
-// Close month/year selector modal
 function closeMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'none';
 }
+

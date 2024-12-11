@@ -62,6 +62,13 @@
                 <p>Tehingute ajalugu</p>
                 <p style="font-size: 16px; padding-bottom: 20px;">Periood: teadmata</p>
             </div>
+            <div>
+                <form id="csvUploadForm" action="{{ url_for('upload_csv') }}" method="POST" enctype="multipart/form-data">
+                    <label for="csvFile">Lisa CSV fail:</label>
+                    <input type="file" id="csvFile" name="csvFile" accept=".csv" required>
+                    <button type="submit">Laadi üles</button>
+                </form>
+            </div>
             
             <div>
                 <form id="transactionForm" action="{{ url_for('add_data') }}" method="POST">
@@ -71,6 +78,7 @@
                     <input type="number" id="amount" name="amount" placeholder="Kulu €" required>
                     <button type="submit">Lisa tehing</button>
                 </form>
+                
                 <div class = "wrapper_table">
                     {% if data and data|length > 0 %}
                     <table id ="transactionTable">
