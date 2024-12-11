@@ -196,6 +196,7 @@ def chart_data():
     return jsonify(data)  
 
 # Funktsioon CSV-faili üleslaadimiseks ja töötlemiseks sõltuvalt valitud pangast
+
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
     file = request.files.get('csvFile')
