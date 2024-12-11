@@ -91,7 +91,6 @@ function drawChart(chartData) {
     var data = google.visualization.arrayToDataTable(chartData);
 
     var options = {
-        title: 'Monthly Expenses',
         pieHole: 0.4,
     };
 
@@ -199,6 +198,53 @@ function filterByMonthYear() {
     closeMonthYearSelector();
 }
 
+function deleteEntry(entryId) {
+    if (confirm("Kas olete kindel, et soovite selle tehingu kustutada?")) {
+        fetch(`/delete_entry/${entryId}`, {
+            method: "DELETE",
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to update the table
+                } else {
+                    alert("Kustutamine ebaõnnestus: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Kustutamisel tekkis viga.");
+            });
+    }
+}
+
+function modifyEntry(entryId) {
+    const entryDate = document.getElementById('entryDate').value;
+    const entryPayer = document.getElementById('entryPayer').value;
+    const entryCategory = document.getElementById('entryCategory').value;
+    const entryAmount = document.getElementById('entryAmount').value;
+    const entryDetails = `${entryId}*${entryDate}*${entryPayer}*${entryCategory}*${entryAmount}`
+
+    fetch(`/modify_entry/${entryDetails}`, {
+        method: "POST",
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            } else {
+                alert("Muutmine ebaõnnestus: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Muutmisel tekkis viga.");
+        });
+}
+
+
 // Show month/year selector modal
 function showMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'flex';
@@ -207,4 +253,12 @@ function showMonthYearSelector() {
 // Close month/year selector modal
 function closeMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'none';
+}
+
+function showOptionsOnListItem() {
+    document.getElementById('optionsModal').style.display = 'flex';
+}
+
+function closeOptionsOnListItem() {
+    document.getElementById('optionsModal').style.display = 'none';
 }

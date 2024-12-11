@@ -26,7 +26,6 @@
                 <p class="hello_message">Tere, Peeter!</p>
             </div>
             <button type="button" class="menu" onclick="showMonthYearSelector()">Vaheta Kuu/Aasta</button>
-
             <div id="monthYearModal" class="modal" style="display: none;">
                 <div class="modal-content">
                     <h2>Vali Kuu ja Aasta</h2>
@@ -91,8 +90,20 @@
                                 <td>{{ entry.category }}</td>
                                 <td class="amount">{{ entry.amount }} €</td>
                                 <td class="button-cell">
-                                    <button class="delete-button" onclick="deleteEntry('{{ entry.id }}')"><i class="fa fa-trash"></i></button>
+                                    <button class="delete-button" onclick="showOptionsOnListItem()"><i class="fa fa-cog"></i></button>
                                 </td>
+                                <div id="optionsModal" class="modal" style="display: none;">
+                                    <div class="modal-content">
+                                        <h2>Muuda Sisendit</h2>
+                                        <input type="text" id="entryDate" placeholder="Hetkeväärtus: {{ entry.date }}">
+                                        <input type="text" id="entryPayer" placeholder="Hetkeväärtus: {{ entry.payer }}">
+                                        <input type="text" id="entryCategory" placeholder="Hetkeväärtus: {{ entry.category }}">
+                                        <input type="number" id="entryAmount" placeholder="Hetkeväärtus: {{ entry.amount }}">
+                                        <button onclick="modifyEntry('{{ entry.id }}')">Muuda</button>
+                                        <button onclick="deleteEntry('{{ entry.id }}')" style="background: red;">Kustuta</button>
+                                        <button onclick="closeOptionsOnListItem()">Sulge</button>
+                                    </div>
+                                </div>
                             </tr>
                             {% endfor %}
                         </tbody>    

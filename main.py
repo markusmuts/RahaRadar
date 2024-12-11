@@ -83,12 +83,6 @@ def kulud():
         expenses = db.child("users").child(uid).child("expenses").get().val()
         total_expenses = 0
 
-        if expenses:
-            for expense_id, expense in expenses.items():
-                total_expenses += expense.get("amount", 0)
-        else:
-            total_expenses = 0
-
         if entries.val():
             data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
         else:
@@ -177,6 +171,30 @@ def delete_entry(entry_id):
         print(f"Viga tehingu kustutamisel Firebase'ist: {e}")
         return jsonify({"success": False, "message": f"Kustutamine ebaõnnestus: {e}"}), 500
 
+@app.route("/modify_entry/<entry_details>", methods=["POST"])
+def modify_entry(entry_details):
+    try:
+        uid = session["user"]
+        # Attempt to delete the entry in Firebase
+        entry_id, entry_date, entry_payer, entry_category, entry_amount = entry_details.split('*')
+        entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
+        i = 0
+        for change in entry_changes:
+            change = change.strip()
+            if change == "" or change == None:
+                i += 1
+            else:
+                match i:
+                    case 0: db.child("users").child(uid).child("expenses").child(entry_id).update({"date": str(change)})
+                    case 1: db.child("users").child(uid).child("expenses").child(entry_id).update({"payer": str(change)})
+                    case 2: db.child("users").child(uid).child("expenses").child(entry_id).update({"category": str(change)})
+                    case 3: db.child("users").child(uid).child("expenses").child(entry_id).update({"amount": str(change)})
+                i += 1
+        return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
+    except Exception as e:
+        # Log the exact error for debugging
+        print(f"Viga tehingu muutmisel: {e}")
+        return jsonify({"success": False, "message": f"Muutmine ebaõnnestus: {e}"}), 500
 
 
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
