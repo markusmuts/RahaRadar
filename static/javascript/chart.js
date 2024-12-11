@@ -142,7 +142,7 @@ function filterByMonthYear() {
     const processedChartData = preprocessChartData(chartRows);
     if (processedChartData.length <= 1) {
         console.warn('No valid data available for the selected range.');
-        document.getElementById('donutchart').innerHTML = "<p>Pole andmeid antud kuu kohta.</p>";
+        document.getElementById('donutchart').innerHTML = "<p>Pole andmeid antud.</p>";
     } else {
         drawChart(processedChartData);
     }
@@ -217,4 +217,54 @@ function showMonthYearSelector() {
 function closeMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'none';
 }
+function deleteEntry(entryId) {
+    if (confirm("Kas olete kindel, et soovite selle tehingu kustutada?")) {
+        fetch(`/delete_entry/${entryId}`, {
+            method: "DELETE",
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to update the table
+                } else {
+                    alert("Kustutamine ebaõnnestus: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Kustutamisel tekkis viga.");
+            });
+    }
+}
 
+function modifyEntry(entryId) {
+    const entryDate = document.getElementById('entryDate').value;
+    const entryPayer = document.getElementById('entryPayer').value;
+    const entryCategory = document.getElementById('entryCategory').value;
+    const entryAmount = document.getElementById('entryAmount').value;
+    const entryDetails = `${entryId}*${entryDate}*${entryPayer}*${entryCategory}*${entryAmount}`
+    fetch(`/modify_entry/${entryDetails}`, {
+        method: "POST",
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            } else {
+                alert("Muutmine ebaõnnestus: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Muutmisel tekkis viga.");
+        });
+}
+function showOptionsOnListItem() {
+    document.getElementById('optionsModal').style.display = 'flex';
+}
+
+function closeOptionsOnListItem() {
+    document.getElementById('optionsModal').style.display = 'none';
+}
