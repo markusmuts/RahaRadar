@@ -217,7 +217,9 @@ function showMonthYearSelector() {
 function closeMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'none';
 }
-function deleteEntry(entryId) {
+function deleteEntry() {
+    const entryId = document.getElementById('entryId').value
+
     if (confirm("Kas olete kindel, et soovite selle tehingu kustutada?")) {
         fetch(`/delete_entry/${entryId}`, {
             method: "DELETE",
@@ -240,12 +242,14 @@ function deleteEntry(entryId) {
 
 
 
-function modifyEntry(entryId) {
+function modifyEntry() {
     const entryDate = document.getElementById('entryDate').value;
     const entryPayer = document.getElementById('entryPayer').value;
     const entryCategory = document.getElementById('entryCategory').value;
     const entryAmount = document.getElementById('entryAmount').value;
-    const entryDetails = `${entryId}*${entryDate}*${entryPayer}*${entryCategory}*${entryAmount}`
+    const entryId = document.getElementById('entryId').value
+
+    const entryDetails = `${entryId};${entryDate};${entryPayer};${entryCategory};${entryAmount}`
     fetch(`/modify_entry/${entryDetails}`, {
         method: "POST",
     })
@@ -263,10 +267,64 @@ function modifyEntry(entryId) {
             alert("Muutmisel tekkis viga.");
         });
 }
-function showOptionsOnListItem() {
-    document.getElementById('optionsModal').style.display = 'flex';
+
+function addEntry() {
+    const entryDate = document.getElementById('newEntryDate').value;
+    const entryPayer = document.getElementById('newEntryPayer').value;
+    const entryCategory = document.getElementById('newEntryCategory').value;
+    const entryAmount = document.getElementById('newEntryAmount').value;
+    const entryDetails = `${entryDate};${entryPayer};${entryCategory};${entryAmount}`
+    fetch(`/add_data/${entryDetails}`, {
+        method: "POST",
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Lisamisel tekkis viga.");
+        });
+}
+
+function showOptionsOnListItem(entryId, entryDate, entryPayer, entryCategory, entryAmount) {
+    // Set the placeholders with the current entry values
+    document.getElementById("entryDate").placeholder = entryDate || "Kuupäev puudub";
+    document.getElementById("entryPayer").placeholder = entryPayer || "Saaja / Maksja puudub";
+    document.getElementById("entryCategory").placeholder = entryCategory || "Kategooria puudub";
+    document.getElementById("entryAmount").placeholder = entryAmount || "Summa puudub";
+
+    // Set the input values to empty so the user can modify them
+    document.getElementById("entryDate").value = "";
+    document.getElementById("entryPayer").value = "";
+    document.getElementById("entryCategory").value = "";
+    document.getElementById("entryAmount").value = "";
+
+    // Store the entry ID in a hidden field
+    document.getElementById("entryId").value = entryId;
+
+    // Display the modal
+    document.getElementById("optionsModal").style.display = "flex";
 }
 
 function closeOptionsOnListItem() {
     document.getElementById('optionsModal').style.display = 'none';
 }
+
+function showEntryItem() {
+    document.getElementById('entryModal').style.display = 'flex';
+}
+
+function closeEntryItem() {
+    document.getElementById('entryModal').style.display = 'none';
+}
+
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+

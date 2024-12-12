@@ -11,25 +11,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <script src="{{ url_for('static', filename='javascript/chart.js')}}"></script>    
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <body>
     <div class="header">
         <img src="{{ url_for('static', filename='images/raharadar.png')}}" style="height: 56.5px; width: 219px; margin-left: 20px;">
-        <a href="/logout">Logout</a>
         <div class="pages">
             <a>KULUD</a>
             <a>TULUD</a>
             <a>SÄÄSTMINE</a>
         </div>
-        <div style="display: inline-flex; width: 20%; height: fit-content; justify-content: space-evenly;">
-            <div style="display: inline-flex; justify-content: space-between; width: fit-content;">
-                <img src="{{ url_for('static', filename='images/pilt.png')}}" style="height: 30px; width: 30px; align-self: center; padding-right: 10px;">
-                <p class="hello_message">Tere, Peeter!</p>
+        <div class="dropdown">
+            <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
+            <div id="myDropdown" class="dropdown-content">
+              <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa tehing</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa CSV fail</a>
+              <a href="/logout">Log Out</a>
             </div>
-            <button type="button" class="menu" onclick="showMonthYearSelector()">Vaheta Kuu/Aasta</button>
-            <div id="monthYearModal" class="modal" style="display: none;">
+            <div id="entryModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Lisa tehing</h2>
+                    <input type="text" id="newEntryDate" placeholder="PP.KK.AAAA" required>
+                    <input type="text" id="newEntryPayer" placeholder="Saaja / Maksja" required>
+                    <input type="text" id="newEntryCategory" placeholder="Kategooria" required>
+                    <input type="number" id="newEntryAmount" placeholder="Kulu €" required>
+                    <button onclick="addEntry()">Lisa</button>
+                    <button onclick="closeEntryItem()">Sulge</button>
+                </div>
+            </div>
+            <div id="monthYearModal" class="modal" style="display: none; direction: ltr;">
                 <div class="modal-content">
                     <h2>Vali Kuu ja Aasta</h2>
-                    <select id="monthSelector">
+                    <select id="monthSelector" required>
                         <option value="1">Jaanuar</option>
                         <option value="2">Veebruar</option>
                         <option value="3">Märts</option>
@@ -43,7 +56,7 @@
                         <option value="11">November</option>
                         <option value="12">Detsember</option>
                     </select>
-                    <input type="number" id="yearSelector" placeholder="Aasta (nt 2024)" min="2000" max="2100">
+                    <input type="number" id="yearSelector" placeholder="Aasta (nt 2024)" min="2000" max="2100" required>
                     <button onclick="filterByMonthYear()">Filtreeri</button>
                     <button onclick="closeMonthYearSelector()">Sulge</button>
                 </div>
@@ -54,7 +67,6 @@
         <div class = "chart_box">
             <p>Kulude analüüs</p>
             <div id="donutchart" style="width: 500px; height: 500px;"></div>
-
         </div>
         <div class="list">
             <div class="list_upper">
@@ -68,16 +80,7 @@
                     <button type="submit">Laadi üles</button>
                 </form>
             </div>
-            
             <div>
-                <form id="transactionForm" action="{{ url_for('add_data') }}" method="POST">
-                    <input type="text" id="date" name="date" placeholder="DD.MM.YYYY" required>
-                    <input type="text" id="payer" name="payer" placeholder="Saaja / Maksja" required>
-                    <input type="text" id="category" name="category" placeholder="Kategooria" required>
-                    <input type="number" id="amount" name="amount" placeholder="Kulu €" required>
-                    <button type="submit">Lisa tehing</button>
-                </form>
-                
                 <div class = "wrapper_table">
                     {% if data and data|length > 0 %}
                     <table id ="transactionTable">
@@ -87,7 +90,7 @@
                                 <th>Saaja / Maksja</th>
                                 <th>Kategooria</th>
                                 <th>Summa</th>
-                                <th><button class="modify-button"><i class="fa fa-ellipsis-h "></i></button></th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -98,20 +101,21 @@
                                 <td>{{ entry.category }}</td>
                                 <td class="amount">{{ entry.amount }} €</td>
                                 <td class="button-cell">
-                                    <button class="delete-button" onclick="showOptionsOnListItem()"><i class="fa fa-cog"></i></button>
-                                </td>
-                                <div id="optionsModal" class="modal" style="display: none;">
-                                    <div class="modal-content">
-                                        <h2>Muuda Sisendit</h2>
-                                        <input type="text" id="entryDate" placeholder="Hetkeväärtus: {{ entry.date }}">
-                                        <input type="text" id="entryPayer" placeholder="Hetkeväärtus: {{ entry.payer }}">
-                                        <input type="text" id="entryCategory" placeholder="Hetkeväärtus: {{ entry.category }}">
-                                        <input type="number" id="entryAmount" placeholder="Hetkeväärtus: {{ entry.amount }}">
-                                        <button onclick="modifyEntry('{{ entry.id }}')">Muuda</button>
-                                        <button onclick="deleteEntry('{{ entry.id }}')" style="background: red;">Kustuta</button>
-                                        <button onclick="closeOptionsOnListItem()">Sulge</button>
+                                    <button class="delete-button" onclick="showOptionsOnListItem('{{ entry.id }}', '{{ entry.date }}', '{{ entry.payer }}', '{{ entry.category }}', '{{ entry.amount }}')"><i class="fa fa-cog"></i></button>
+                                    <div id="optionsModal" class="modal" style="display: none;">
+                                        <div class="modal-content">
+                                            <h2>Muuda Sisendit</h2>
+                                            <input type="text" id="entryDate" placeholder="Kuupäev puudub">
+                                            <input type="text" id="entryPayer" placeholder="Saaja / Maksja puudub">
+                                            <input type="text" id="entryCategory" placeholder="Kategooria puudub">
+                                            <input type="number" id="entryAmount" placeholder="Summa puudub">
+                                            <input type="hidden" id="entryId">
+                                            <button onclick="modifyEntry()">Muuda</button>
+                                            <button onclick="deleteEntry()" style="background: red;">Kustuta</button>
+                                            <button onclick="closeOptionsOnListItem()">Sulge</button>
+                                        </div>
                                     </div>
-                                </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>    

@@ -120,13 +120,9 @@ def allowed_file(filename):
     
 
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
-@app.route("/add_data", methods=["POST"])
-def add_data():
-    date = request.form.get("date")
-    payer = request.form.get("payer")
-    category = request.form.get("category")
-    amount = request.form.get("amount")
-    
+@app.route("/add_data/<entry_details>", methods=["POST"])
+def add_data(entry_details):
+    date, payer, category, amount = entry_details.split(';')
     if date and payer and category and amount:
         try:
             uid = session["user"]
@@ -136,15 +132,15 @@ def add_data():
                 "category": category,
                 "amount": float(amount)  
             })
-            flash("Andmed edukalt lisatud!")  
+            redirect(url_for("kulud"))
+            return jsonify({"success": True, "message": "Tehing edukalt lisatud!"}), 200 
         except Exception as e:
             print("Viga andmete lisamisel Firebase'i:", e)
-            flash("Tekkis viga andmete lisamisel Firebase'i.")
+            return jsonify({"success": False, "message": f"Lisamine ebaõnnestus: {e}"}), 500
     else:
-        flash("Palun täitke kõik väljad.")  
+        return jsonify({"success": False, "message": "Palun täitke kõik väljad"}), 500  
     
     # Redirect back to the main page
-    return redirect(url_for("kulud"))
 
 
 # Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel
@@ -179,7 +175,7 @@ def modify_entry(entry_details):
     try:
         uid = session["user"]
         # Attempt to delete the entry in Firebase
-        entry_id, entry_date, entry_payer, entry_category, entry_amount = entry_details.split('*')
+        entry_id, entry_date, entry_payer, entry_category, entry_amount = entry_details.split(';')
         entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
         i = 0
         for change in entry_changes:

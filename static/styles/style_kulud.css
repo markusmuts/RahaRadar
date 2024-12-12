@@ -15,6 +15,7 @@ body, html {
 .header {
     display: inline-flex;
     width: 100%;
+    position: relative;
     flex-direction: row;
     justify-content: space-between;
     text-align: center;
@@ -26,6 +27,7 @@ body, html {
 .pages {
     display: inline-flex;
     align-self: center;
+    align-items: center;
     height: auto;
 }
 
@@ -35,9 +37,72 @@ body, html {
     text-decoration: none;
 }
 
-.hello_message {
-    width: fit-content;
+.header_menu {
+    padding: 5px;
+    height: fit-content;
+    background: none;
+    align-self: center;
+    border: none;
+    margin-right: 1%;
+    cursor: pointer;
+    transition-duration: 0.5s;
+
+    :hover {
+        transform: scale(1.05);
+    }
 }
+
+/* Dropdown Button */
+.dropbtn {
+    background: none;
+    color: black;
+    padding: 8px;
+    font-size: 2em;
+    height: fit-content;
+    border: none;
+    cursor: pointer;
+    transition-duration: 0.5s;
+  }
+  
+  /* Dropdown button on hover & focus */
+  .dropbtn:hover{
+    transform: scale(1.05);
+  }
+  
+  /* The container <div> - needed to position the dropdown content */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+    overflow:visible;
+    z-index: 1;
+    direction: rtl;
+    margin-right: 0.5%;
+  }
+  
+  /* Dropdown Content (Hidden by Default) */
+  .dropdown-content {
+    display: none;
+    position: fixed;
+    background-color: #f1f1f1;
+    overflow-x: hidden;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  /* Links inside the dropdown */
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Change color of dropdown links on hover */
+  .dropdown-content a:hover {background-color: #ddd;}
+  
+  /* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+  .show {display:block;}
 
 .menu {
     background: white;
@@ -72,8 +137,9 @@ body, html {
         color: #4B4B4B;
     }
 }
-.donutchart {
-    overflow: hidden !important;
+
+#donutchart {
+    overflow-y:hidden;
 }
 
 .list {
@@ -277,6 +343,7 @@ td {
 
 /* Modal background styling */
 .modal {
+    direction: ltr;
     position: fixed;
     top: 0;
     left: 0;
@@ -334,3 +401,4 @@ td {
 .modal-content button:last-of-type:hover {
     background: #5a6268; /* Darker on hover */
 }
+
