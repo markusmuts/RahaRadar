@@ -2,7 +2,7 @@
 <html lang="et">
 <head>
     <meta charset="UTF-8">
-    <title>RahaRadar</title>
+    <title>Kulud | RahaRadar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style_kulud.css')}}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png')}}">
@@ -16,16 +16,16 @@
     <div class="header">
         <img src="{{ url_for('static', filename='images/raharadar.png')}}" style="height: 56.5px; width: 219px; margin-left: 20px;">
         <div class="pages">
-            <a>KULUD</a>
-            <a>TULUD</a>
-            <a>SÄÄSTMINE</a>
+            <a href="/kulud">KULUD</a>
+            <a href="/tulud">TULUD</a>
+            <a href="/säästmine">SÄÄSTMINE</a>
         </div>
         <div class="dropdown">
             <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
             <div id="myDropdown" class="dropdown-content">
               <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
-              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa tehing</a>
-              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa CSV fail</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa eesmärk</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Muuda protsenti</a>
               <a href="/logout">Log Out</a>
             </div>
             <div id="entryModal" class="modal" style="display: none;">
@@ -35,7 +35,7 @@
                     <input type="text" id="newEntryPayer" placeholder="Saaja / Maksja" required>
                     <input type="text" id="newEntryCategory" placeholder="Kategooria" required>
                     <input type="number" id="newEntryAmount" placeholder="Kulu €" required>
-                    <button onclick="addEntry()">Lisa</button>
+                    <button onclick="addEntry('expenses')">Lisa</button>
                     <button onclick="closeEntryItem()">Sulge</button>
                 </div>
             </div>
@@ -110,8 +110,8 @@
                                             <input type="text" id="entryCategory" placeholder="Kategooria puudub">
                                             <input type="number" id="entryAmount" placeholder="Summa puudub">
                                             <input type="hidden" id="entryId">
-                                            <button onclick="modifyEntry()">Muuda</button>
-                                            <button onclick="deleteEntry()" style="background: red;">Kustuta</button>
+                                            <button onclick="modifyEntry('expenses')">Muuda</button>
+                                            <button onclick="deleteEntry('expenses')" style="background: red;">Kustuta</button>
                                             <button onclick="closeOptionsOnListItem()">Sulge</button>
                                         </div>
                                     </div>

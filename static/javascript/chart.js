@@ -81,6 +81,7 @@ function drawChart(chartData) {
     chart.draw(data, options);
     console.log("Chart drawn successfully.", chartData);
 }
+
 function filterByMonthYear() {
     const selectedMonth = document.getElementById('monthSelector').value;
     const selectedYear = document.getElementById('yearSelector').value;
@@ -142,7 +143,7 @@ function filterByMonthYear() {
     const processedChartData = preprocessChartData(chartRows);
     if (processedChartData.length <= 1) {
         console.warn('No valid data available for the selected range.');
-        document.getElementById('donutchart').innerHTML = "<p>Pole andmeid antud.</p>";
+        document.getElementById('donutchart').innerHTML = "<p style='font-size: 23px; font-weight: bold; align-self: center; justify-self: center; width: 100%; '>Pole andmeid antud</p>";
     } else {
         drawChart(processedChartData);
     }
@@ -217,11 +218,11 @@ function showMonthYearSelector() {
 function closeMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'none';
 }
-function deleteEntry() {
+function deleteEntry(entryType) {
     const entryId = document.getElementById('entryId').value
-
+    const entryDetails = `${entryId};${entryType}`
     if (confirm("Kas olete kindel, et soovite selle tehingu kustutada?")) {
-        fetch(`/delete_entry/${entryId}`, {
+        fetch(`/delete_entry/${entryDetails}`, {
             method: "DELETE",
         })
             .then(response => response.json())
@@ -242,14 +243,14 @@ function deleteEntry() {
 
 
 
-function modifyEntry() {
+function modifyEntry(entryType) {
     const entryDate = document.getElementById('entryDate').value;
     const entryPayer = document.getElementById('entryPayer').value;
     const entryCategory = document.getElementById('entryCategory').value;
     const entryAmount = document.getElementById('entryAmount').value;
     const entryId = document.getElementById('entryId').value
 
-    const entryDetails = `${entryId};${entryDate};${entryPayer};${entryCategory};${entryAmount}`
+    const entryDetails = `${entryId};${entryDate};${entryPayer};${entryCategory};${entryAmount};${entryType}`
     fetch(`/modify_entry/${entryDetails}`, {
         method: "POST",
     })
@@ -268,12 +269,12 @@ function modifyEntry() {
         });
 }
 
-function addEntry() {
+function addEntry(entryType) {
     const entryDate = document.getElementById('newEntryDate').value;
     const entryPayer = document.getElementById('newEntryPayer').value;
     const entryCategory = document.getElementById('newEntryCategory').value;
     const entryAmount = document.getElementById('newEntryAmount').value;
-    const entryDetails = `${entryDate};${entryPayer};${entryCategory};${entryAmount}`
+    const entryDetails = `${entryDate};${entryPayer};${entryCategory};${entryAmount};${entryType}`
     fetch(`/add_data/${entryDetails}`, {
         method: "POST",
     })

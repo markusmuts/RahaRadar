@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <title>Säästmine | RahaRadar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style_säästmine.css')}}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png')}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<script src="{{ url_for('static', filename='javascript/chart.js')}}"></script>    
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/raharadar.png')}}" style="height: 56.5px; width: 219px; margin-left: 20px;">
+        <div class="pages">
+            <a href="/kulud">KULUD</a>
+            <a href="/tulud">TULUD</a>
+            <a href="/säästmine">SÄÄSTMINE</a>
+        </div>
+        <div class="dropdown">
+            <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
+            <div id="myDropdown" class="dropdown-content">
+              <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa tehing</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa CSV fail</a>
+              <a href="/logout">Log Out</a>
+            </div>
+            <div id="entryModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Lisa tehing</h2>
+                    <input type="text" id="newEntryDate" placeholder="PP.KK.AAAA" required>
+                    <input type="text" id="newEntryPayer" placeholder="Saaja / Maksja" required>
+                    <input type="text" id="newEntryCategory" placeholder="Kategooria" required>
+                    <input type="number" id="newEntryAmount" placeholder="Kulu €" required>
+                    <button onclick="addEntry('income')">Lisa</button>
+                    <button onclick="closeEntryItem()">Sulge</button>
+                </div>
+            </div>
+            <div id="monthYearModal" class="modal" style="display: none; direction: ltr;">
+                <div class="modal-content">
+                    <h2>Vali Kuu ja Aasta</h2>
+                    <select id="monthSelector" required>
+                        <option value="1">Jaanuar</option>
+                        <option value="2">Veebruar</option>
+                        <option value="3">Märts</option>
+                        <option value="4">Aprill</option>
+                        <option value="5">Mai</option>
+                        <option value="6">Juuni</option>
+                        <option value="7">Juuli</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktoober</option>
+                        <option value="11">November</option>
+                        <option value="12">Detsember</option>
+                    </select>
+                    <input type="number" id="yearSelector" placeholder="Aasta (nt 2024)" min="2000" max="2100" required>
+                    <button onclick="filterByMonthYear()">Filtreeri</button>
+                    <button onclick="closeMonthYearSelector()">Sulge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class = "chart_box">
+            <p>Tulude analüüs</p>
+            <div id="donutchart" style="width: 500px; height: 500px;"></div>
+        </div>
+        <div class="list">
+            <div class="list_upper">
+                <p>Tehingute ajalugu</p>
+                <p style="font-size: 16px; padding-bottom: 20px;">Periood: teadmata</p>
+            </div>
+            <div>
+                <div class = "wrapper_table">
+                    {% if data and data|length > 0 %}
+                    <table id ="transactionTable">
+                        <thead>
+                            <tr>
+                                <th>Kuupäev</th>
+                                <th>Saaja / Maksja</th>
+                                <th>Kategooria</th>
+                                <th>Summa</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in data %}
+                            <tr>
+                                <td >{{ entry.date }}</td>
+                                <td>{{ entry.payer }}</td>
+                                <td>{{ entry.category }}</td>
+                                <td class="amount">{{ entry.amount }} €</td>
+                                <td class="button-cell">
+                                    <button class="delete-button" onclick="showOptionsOnListItem('{{ entry.id }}', '{{ entry.date }}', '{{ entry.payer }}', '{{ entry.category }}', '{{ entry.amount }}')"><i class="fa fa-cog"></i></button>
+                                    <div id="optionsModal" class="modal" style="display: none;">
+                                        <div class="modal-content">
+                                            <h2>Muuda Sisendit</h2>
+                                            <input type="text" id="entryDate" placeholder="Kuupäev puudub">
+                                            <input type="text" id="entryPayer" placeholder="Saaja / Maksja puudub">
+                                            <input type="text" id="entryCategory" placeholder="Kategooria puudub">
+                                            <input type="number" id="entryAmount" placeholder="Summa puudub">
+                                            <input type="hidden" id="entryId">
+                                            <button onclick="modifyEntry('income')">Muuda</button>
+                                            <button onclick="deleteEntry('income')" style="background: red;">Kustuta</button>
+                                            <button onclick="closeOptionsOnListItem()">Sulge</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>    
+                    </table>
+                    {% else %}
+                    <p >Tehinguid pole selle kuu jaoks lisatud.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="list_bottom">
+                <p>Kokku: <span >{{ total_sum }} €</span></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

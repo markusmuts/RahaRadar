@@ -32,7 +32,6 @@ config = {
   "storageBucket": "raharadar-27498.firebasestorage.app"
 }
 
-
 # Firebase ja Flask rakenduse initsialiseerimine
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
@@ -82,7 +81,6 @@ def kulud():
     if "user" in session:
         uid = session["user"]
         entries = db.child("users").child(uid).child("expenses").get()
-        expenses = db.child("users").child(uid).child("expenses").get().val()
         total_expenses = 0
 
         if entries.val():
@@ -92,28 +90,34 @@ def kulud():
         return render_template("kulud.html", data=data_list, total_sum = total_expenses)
     return redirect(url_for("login"))
 
-# Funktsioon, mis lisab tehingu Firebase andmebaasi
-def add_transaction_to_firebase(date, payer, category, amount):
-    transaction_data = {
-        "date": date,                 
-        "payer": payer,               
-        "category": category,         
-        "amount": amount              
-    }
-    uid = session["user"]
-    db.child("users").child(uid).push(transaction_data)
-    print("Tehing lisatud Firebase'i:", transaction_data)
+@app.route("/tulud")
+def tulud():
+    if "user" in session:
+        uid = session["user"]
+        entries = db.child("users").child(uid).child("income").get()
+        total_expenses = 0
 
-def sum_expenses():
-    uid = session["user"]
-    expenses = db.child("users").child(uid).child("expenses").get().val()
-    total_expenses = 0
+        if entries.val():
+            data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
+        else:
+            data_list = []
+        return render_template("tulud.html", data=data_list, total_sum = total_expenses)
+    return redirect(url_for("login"))
 
-    if expenses:
-        for expense_id, expense in expenses.items():
-            total_expenses += expense.get("amount", 0)
+@app.route("/säästmine")
+def säästmine():
+    if "user" in session:
+        uid = session["user"]
+        entries = db.child("users").child(uid).child("expenses").get()
+        total_expenses = 0
 
-    return render_template("kulud.html", total_sum = total_expenses)
+        if entries.val():
+            data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
+        else:
+            data_list = []
+        return render_template("säästmine.html", data=data_list, total_sum = total_expenses)
+    return redirect(url_for("login"))
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -122,17 +126,21 @@ def allowed_file(filename):
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data/<entry_details>", methods=["POST"])
 def add_data(entry_details):
-    date, payer, category, amount = entry_details.split(';')
+    date, payer, category, amount, entry_type = entry_details.split(';')
+    match entry_type:
+        case "expenses": url = "kulud"
+        case "income": url = "tulud"
+
     if date and payer and category and amount:
         try:
             uid = session["user"]
-            db.child("users").child(uid).child("expenses").push({
+            db.child("users").child(uid).child(entry_type).push({
                 "date": date,
                 "payer": payer,
                 "category": category,
                 "amount": float(amount)  
             })
-            redirect(url_for("kulud"))
+            redirect(url_for(url))
             return jsonify({"success": True, "message": "Tehing edukalt lisatud!"}), 200 
         except Exception as e:
             print("Viga andmete lisamisel Firebase'i:", e)
@@ -157,13 +165,13 @@ def get_data():
 
     return render_template("kulud.html", data=data_list)
 
-
-@app.route("/delete_entry/<entry_id>", methods=["DELETE"])
-def delete_entry(entry_id):
+@app.route("/delete_entry/<entry_details>", methods=["DELETE"])
+def delete_entry(entry_details):
+    entry_id, entry_type = entry_details.split(';')
     try:
         uid = session["user"]
         # Attempt to delete the entry in Firebase
-        db.child("users").child(uid).child("expenses").child(entry_id).remove()
+        db.child("users").child(uid).child(entry_type).child(entry_id).remove()
         return jsonify({"success": True, "message": "Tehing edukalt kustutatud!"}), 200
     except Exception as e:
         # Log the exact error for debugging
@@ -172,10 +180,11 @@ def delete_entry(entry_id):
 
 @app.route("/modify_entry/<entry_details>", methods=["POST"])
 def modify_entry(entry_details):
+    entry_type = "expenses"
     try:
         uid = session["user"]
         # Attempt to delete the entry in Firebase
-        entry_id, entry_date, entry_payer, entry_category, entry_amount = entry_details.split(';')
+        entry_id, entry_date, entry_payer, entry_category, entry_amount, entry_type = entry_details.split(';')
         entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
         i = 0
         for change in entry_changes:
@@ -184,10 +193,10 @@ def modify_entry(entry_details):
                 i += 1
             else:
                 match i:
-                    case 0: db.child("users").child(uid).child("expenses").child(entry_id).update({"date": str(change)})
-                    case 1: db.child("users").child(uid).child("expenses").child(entry_id).update({"payer": str(change)})
-                    case 2: db.child("users").child(uid).child("expenses").child(entry_id).update({"category": str(change)})
-                    case 3: db.child("users").child(uid).child("expenses").child(entry_id).update({"amount": str(change)})
+                    case 0: db.child("users").child(uid).child(entry_type).child(entry_id).update({"date": str(change)})
+                    case 1: db.child("users").child(uid).child(entry_type).child(entry_id).update({"payer": str(change)})
+                    case 2: db.child("users").child(uid).child(entry_type).child(entry_id).update({"category": str(change)})
+                    case 3: db.child("users").child(uid).child(entry_type).child(entry_id).update({"amount": str(change)})
                 i += 1
         return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
     except Exception as e:
@@ -199,6 +208,8 @@ def modify_entry(entry_details):
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
 @app.route("/chart-data")
 def chart_data():
+    
+
     uid = session["user"]
     entries = db.child("users").child(uid).child("expenses").get()
     
