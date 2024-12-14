@@ -228,24 +228,45 @@ def upload_csv():
     if not file:
         flash("No file uploaded", "error")
         return redirect(url_for("kulud"))
-
-    # Parse the CSV file
     try:
-        # Load the file into a DataFrame
+        # Load the CSV file into a DataFrame
         data = pd.read_csv(file)
+        print("CSV Headers:", data.columns.tolist())  # Debug CSV headers
 
-        # Ensure the required columns are present
-        required_columns = {'date', 'payer', 'category', 'amount'}
+        # Map your CSV columns to Firebase fields
+        column_mapping = {
+            "Kuupäev": "date",        # Correct the name here
+            "Saaja/Maksja": "payer",
+            "Summa": "amount",
+            "Kirjeldus": "category"
+        }
+
+        # Ensure the required columns exist in the uploaded CSV
+        required_columns = set(column_mapping.keys())
         if not required_columns.issubset(data.columns):
-            flash(f"CSV must contain columns: {required_columns}", "error")
+            flash(f"CSV must contain columns: {', '.join(required_columns)}", "error")
             return redirect(url_for("kulud"))
 
-        # Print the data to the console for debugging
-        print(data)
+        # Rename columns to match Firebase schema
+        data.rename(columns=column_mapping, inplace=True)
 
-        # Display the content of the CSV file on a new page for debugging
-        return render_template("csv_preview.html", table=data.to_html(index=False))
+        # Convert the DataFrame into a list of dictionaries for Firebase
+        entries = data.to_dict(orient='records')
+
+        # Save each entry into the Firebase database under "expenses"
+        uid = session["user"]
+        for entry in entries:
+            db.child("users").child(uid).child("expenses").push({
+                "date": entry["date"],
+                "payer": entry["payer"],
+                "category": entry["category"],
+                "amount": float(entry["amount"])
+            })
+
+        flash("CSV file successfully uploaded and data added to Firebase!", "success")
+        return redirect(url_for("kulud"))
     except Exception as e:
+        print(f"Error: {e}")
         flash(f"Error processing CSV: {str(e)}", "error")
         return redirect(url_for("kulud"))
 
