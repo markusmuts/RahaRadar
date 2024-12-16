@@ -4,7 +4,7 @@ function loadGoogleCharts(callback) {
     script.src = "https://www.gstatic.com/charts/loader.js";
     script.onload = () => {
         console.log("Google Charts script loaded successfully.");
-        google.charts.load("current", { packages: ["corechart", "piechart"] });
+        google.charts.load("current", { packages: ["piechart"] });
         google.charts.setOnLoadCallback(callback);
     };
     script.onerror = () => {
@@ -73,7 +73,7 @@ function drawChart(chartData) {
     }
 
     const data = google.visualization.arrayToDataTable(chartData);
-    const options = {
+    var options = {
         pieHole: 0.4,
     };
 

@@ -59,7 +59,9 @@ def login():
         try:
             user = auth.sign_in_with_email_and_password(email, password)
             uid = user['localId']
+            idToken = user['idToken']
             session['user'] = uid
+            session['idToken'] = idToken
             get_data()
             return redirect(url_for("kulud"))
         except Exception as e:
@@ -80,7 +82,7 @@ def logout():
 def kulud():
     if "user" in session:
         uid = session["user"]
-        entries = db.child("users").child(uid).child("expenses").get()
+        entries = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
         total_expenses = 0
 
         if entries.val():
@@ -94,7 +96,7 @@ def kulud():
 def tulud():
     if "user" in session:
         uid = session["user"]
-        entries = db.child("users").child(uid).child("income").get()
+        entries = db.child("users").child(uid).child("income").get(token=session['idToken'])
         total_expenses = 0
 
         if entries.val():
@@ -108,7 +110,7 @@ def tulud():
 def säästmine():
     if "user" in session:
         uid = session["user"]
-        entries = db.child("users").child(uid).child("expenses").get()
+        entries = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
         total_expenses = 0
 
         if entries.val():
@@ -139,7 +141,7 @@ def add_data(entry_details):
                 "payer": payer,
                 "category": category,
                 "amount": float(amount)  
-            })
+            }, token=session['idToken'])
             redirect(url_for(url))
             return jsonify({"success": True, "message": "Tehing edukalt lisatud!"}), 200 
         except Exception as e:
@@ -155,7 +157,7 @@ def add_data(entry_details):
 @app.route("/get_data")
 def get_data():
     uid = session["user"]
-    entries = db.child("users").child(uid).child("expenses").get()
+    entries = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
     if entries.val():
         data_list = [
             {"id": key, **entry} for key, entry in entries.val().items()
@@ -171,7 +173,7 @@ def delete_entry(entry_details):
     try:
         uid = session["user"]
         # Attempt to delete the entry in Firebase
-        db.child("users").child(uid).child(entry_type).child(entry_id).remove()
+        db.child("users").child(uid).child(entry_type).child(entry_id).remove(token=session['idToken'])
         return jsonify({"success": True, "message": "Tehing edukalt kustutatud!"}), 200
     except Exception as e:
         # Log the exact error for debugging
@@ -193,10 +195,10 @@ def modify_entry(entry_details):
                 i += 1
             else:
                 match i:
-                    case 0: db.child("users").child(uid).child(entry_type).child(entry_id).update({"date": str(change)})
-                    case 1: db.child("users").child(uid).child(entry_type).child(entry_id).update({"payer": str(change)})
-                    case 2: db.child("users").child(uid).child(entry_type).child(entry_id).update({"category": str(change)})
-                    case 3: db.child("users").child(uid).child(entry_type).child(entry_id).update({"amount": str(change)})
+                    case 0: db.child("users").child(uid).child(entry_type).child(entry_id).update({"date": str(change)}, token=session['idToken'])
+                    case 1: db.child("users").child(uid).child(entry_type).child(entry_id).update({"payer": str(change)}, token=session['idToken'])
+                    case 2: db.child("users").child(uid).child(entry_type).child(entry_id).update({"category": str(change)}, token=session['idToken'])
+                    case 3: db.child("users").child(uid).child(entry_type).child(entry_id).update({"amount": str(change)}, token=session['idToken'])
                 i += 1
         return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
     except Exception as e:
@@ -208,10 +210,8 @@ def modify_entry(entry_details):
 # Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
 @app.route("/chart-data")
 def chart_data():
-    
-
     uid = session["user"]
-    entries = db.child("users").child(uid).child("expenses").get()
+    entries = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
     
     data = [["Category", "Amount"]]  
     if entries.val():

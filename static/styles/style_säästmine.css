@@ -411,3 +411,43 @@ td {
     background: #5a6268; /* Darker on hover */
 }
 
+.sum {
+    height: 48%;
+    width: 31.3rem;
+    background: white;
+    border: 2px solid gray;
+    overflow-y: hidden;
+
+    p {
+        margin: 0;
+        margin-top: 10px;
+        padding-left: 10px;
+        font-size: 30px;
+        color: #4B4B4B;
+    }
+
+    h3{
+        margin: 0;
+        margin-top: 30px;
+        padding-left: 10px;
+        font-size: 23px;
+        color: #4B4B4B;
+    }
+    
+    h4 {
+        margin: 0;
+        width: fit-content;
+        padding: 30px;
+        font-size: 50px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+#income_sum {
+    color: green;
+}
+
+#expenses_sum {
+    color: red;
+}
