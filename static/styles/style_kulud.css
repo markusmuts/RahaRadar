@@ -149,6 +149,7 @@ body, html {
 
 #donutchart {
     overflow-y:hidden;
+    display: flex;
 }
 
 .list {

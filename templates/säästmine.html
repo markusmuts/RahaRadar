@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:i+tal,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
-<script src="{{ url_for('static', filename='javascript/chart.js')}}"></script>    
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="{{ url_for('static', filename='javascript/säästmine.js')}}"></script>
 <body>
+    <p hidden id="data_expenses">{{ data_expenses }}</p>
     <div class="header">
         <img src="{{ url_for('static', filename='images/raharadar.png')}}" style="height: 56.5px; width: 219px; margin-left: 20px;">
         <div class="pages">
@@ -24,19 +24,25 @@
             <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
             <div id="myDropdown" class="dropdown-content">
               <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
-              <a onclick="" style="cursor: pointer;">Lisa eesmärk</a>
-              <a onclick="" style="cursor: pointer;">Muuda säästmise %-i</a>
+              <a onclick="showEntryItem()" style="cursor: pointer;">Lisa eesmärk</a>
+              <a onclick="showPercent()" style="cursor: pointer;">Muuda säästmise %-i</a>
               <a href="/logout">Log Out</a>
             </div>
             <div id="entryModal" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <h2>Lisa tehing</h2>
-                    <input type="text" id="newEntryDate" placeholder="PP.KK.AAAA" required>
-                    <input type="text" id="newEntryPayer" placeholder="Saaja / Maksja" required>
+                    <h2>Lisa eesmärk</h2>
                     <input type="text" id="newEntryCategory" placeholder="Kategooria" required>
-                    <input type="number" id="newEntryAmount" placeholder="Kulu €" required>
-                    <button onclick="addEntry('income')">Lisa</button>
+                    <input type="number" id="newEntryGoal" placeholder="Eesmärgi suurus" required>
+                    <button onclick="addEntry('goals')">Lisa</button>
                     <button onclick="closeEntryItem()">Sulge</button>
+                </div>
+            </div>
+            <div id="percentModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h2>Muuda säästmise protsenti</h2>
+                    <input type="number" id="percent" placeholder="Protsent" required min="0" max="100">
+                    <button onclick="changePercent()">Muuda</button>
+                    <button onclick="closePercent()">Sulge</button>
                 </div>
             </div>
             <div id="monthYearModal" class="modal" style="display: none; direction: ltr;">
@@ -68,24 +74,23 @@
             <div class = "sum" style="margin-bottom: 20px;">
                 <p>Kuu koond</p>
                 <h3>Tulud:</h3>
-                <h4 id="income_sum">+199.00 €</h4>
+                <h4> <span id="income_sum">0.00 €</span></h4>
                 <h3>Kulud:</h3>
-                <h4 id="expenses_sum">-83.54 €</h4>
+                <h4 id="expenses_sum">0.00 €</h4>
             </div>
             <div class = "sum">
                 <p>Säästmise analüüs</p>
                 <h3>Säästmise protsent:</h3>
-                <h4 id="percent_to_save">50%</h5>
+                <h4 id="percent_to_save">0.00 %</h4>
                 <h3>Kulutada jäänud:</h3>
-                <h4 id="left_to_spend">96.5 €</h5>
-
+                <h4 id="left_to_spend">0.00 €</h4>
             </div>
 
         </div>
         <div class="list">
             <div class="list_upper">
                 <p>Säästmise eesmärgid</p>
-                <p style="font-size: 16px; padding-bottom: 20px;">Periood: teadmata</p>
+                <p style="font-size: 16px; padding-bottom: 20px;">Periood: <span style="margin-left: 3px;" id= "period">teadmata</span></p>
             </div>
             <div>
                 <div class = "wrapper_table">
@@ -95,31 +100,29 @@
                             <tr>
                                 <th>Kategooria</th>
                                 <th>Eesmärk</th>
-                                <th></th>
-                                <th>Summa</th>
+                                <th>Kulutatud</th>
+                                <th>Kulutada jäänud</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for entry in data %}
                             <tr>
-                                <td >{{ entry.date }}</td>
-                                <td>{{ entry.payer }}</td>
-                                <td>{{ entry.category }}</td>
-                                <td class="amount">{{ entry.amount }} €</td>
+                                <td >{{ entry.category }}</td>
+                                <td>{{ entry.goal }} €</td>
+                                <td>0 €</td>
+                                <td>0 €</td>
                                 <td class="button-cell">
-                                    <button class="delete-button" onclick="showOptionsOnListItem('{{ entry.id }}', '{{ entry.date }}', '{{ entry.payer }}', '{{ entry.category }}', '{{ entry.amount }}')"><i class="fa fa-cog"></i></button>
-                                    <div id="optionsModal" class="modal" style="display: none;">
+                                    <button class="delete-button" onclick="showOptionsOnGoalItem('{{ entry.id }}', '{{ entry.category }}', '{{ entry.goal }}',)"><i class="fa fa-cog"></i></button>
+                                    <div id="goalModal" class="modal" style="display: none;">
                                         <div class="modal-content">
                                             <h2>Muuda Sisendit</h2>
-                                            <input type="text" id="entryDate" placeholder="Kuupäev puudub">
-                                            <input type="text" id="entryPayer" placeholder="Saaja / Maksja puudub">
-                                            <input type="text" id="entryCategory" placeholder="Kategooria puudub">
-                                            <input type="number" id="entryAmount" placeholder="Summa puudub">
-                                            <input type="hidden" id="entryId">
-                                            <button onclick="modifyEntry('income')">Muuda</button>
-                                            <button onclick="deleteEntry('income')" style="background: red;">Kustuta</button>
-                                            <button onclick="closeOptionsOnListItem()">Sulge</button>
+                                            <input type="text" id="entryCategoryGoal" placeholder="Kategooria puudub">
+                                            <input type="number" id="entryGoal" placeholder="Eesmärk puudub">
+                                            <input type="hidden" id="entryIdGoal">
+                                            <button onclick="modifyEntry('goals')">Muuda</button>
+                                            <button onclick="deleteEntry('goals')" style="background: red;">Kustuta</button>
+                                            <button onclick="closeOptionsOnGoalItem()">Sulge</button>
                                         </div>
                                     </div>
                                 </td>
@@ -134,5 +137,121 @@
             </div>
         </div>
     </div>
+    <script>
+        function filterExpenses() {
+            const monthInLocalStorage = localStorage.getItem('selectedMonth'); // Example: "12"
+            const yearInLocalStorage = localStorage.getItem('selectedYear'); // Example: "2023"
+
+            // Ensure the localStorage data is available
+            if (!monthInLocalStorage || !yearInLocalStorage) {
+                    alert("Month and Year are not set in localStorage.");
+                    return;
+                }
+            
+            const filteredExpenses = expenses.filter(expense => {
+                const expenseDate = expense.date.split('.'); // Example: "13.12.23" -> [13, 12, 23]
+                const expenseMonth = parseInt(expenseDate[1]); // Extract the month
+                const expenseYear = 2000 + parseInt(expenseDate[2]); // Extract the year and convert (e.g., "23" -> 2023)
+    
+                return expenseMonth === parseInt(monthInLocalStorage) && expenseYear === parseInt(yearInLocalStorage);
+            });
+
+            return filteredExpenses
+        }
+
+        function filteredExpensesSum(filteredExpenses) {
+
+            const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+            return totalExpenses
+        }
+
+        function filteredIncomeSum() {
+            const monthInLocalStorage = localStorage.getItem('selectedMonth'); // Example: "12"
+            const yearInLocalStorage = localStorage.getItem('selectedYear'); // Example: "2023"
+
+            // Ensure the localStorage data is available
+            if (!monthInLocalStorage || !yearInLocalStorage) {
+                    alert("Month and Year are not set in localStorage.");
+                    return;
+                }
+            
+            const filteredIncome = income.filter(income => {
+                const incomeDate = income.date.split('.'); // Example: "13.12.23" -> [13, 12, 23]
+                const incomeMonth = parseInt(incomeDate[1]); // Extract the month
+                const incomeYear = 2000 + parseInt(incomeDate[2]); // Extract the year and convert (e.g., "23" -> 2023)
+    
+                return incomeMonth === parseInt(monthInLocalStorage) && incomeYear === parseInt(yearInLocalStorage);
+            });
+
+            const totalIncome = filteredIncome.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+            return totalIncome
+
+        }
+    
+        function calculatePercentLeftToSpend(totalIncome, totalExpenses) {
+
+                const percentInput = localStorage.getItem('percent')
+                const percentToSave = 1 - parseFloat(percentInput) / 100;
+
+                // Perform the calculation: (incomeSum * percentToSave) - totalExpenses
+                const result = (parseFloat(totalIncome) * percentToSave) - parseFloat(totalExpenses);
+    
+                // Display the result
+                document.getElementById('left_to_spend').textContent = result.toFixed(2) + " €";
+        }
+
+        function calculateSpendingOnGoals(goals, expenses) {
+            return goals.map(goal => {
+                // Calculate total spent on each goal
+                const totalSpent = expenses.filter(expense => expense.category === goal.category)
+                    .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+                return {
+                    category: goal.category,
+                    goalAmount: parseFloat(goal.goal), // Goal amount
+                    totalSpent: totalSpent,
+                    remainingAmount: parseFloat(goal.goal) - totalSpent
+                };
+            });
+        }
+
+        function updateGoalTable(spendingOnGoals) {
+            const tableRows = document.querySelectorAll('#transactionTable tbody tr');
+    
+            spendingOnGoals.forEach((goal, index) => {
+                const row = tableRows[index]; // Get the row for each goal
+                const remainingAmountCell = row.querySelector('td:nth-child(4)'); // Kulutada jäänud cell
+        
+                // Update "Kulutatud" column (spent amount)
+                row.querySelector('td:nth-child(3)').textContent = goal.totalSpent.toFixed(2) + " €"; // Kulutatud
+        
+                // Update "Kulutada jäänud" column (remaining amount)
+                remainingAmountCell.textContent = goal.remainingAmount.toFixed(2) + " €"; // Kulutada jäänud
+
+                // Apply conditional styling based on the remaining amount
+                if (goal.remainingAmount < 0) {
+                    remainingAmountCell.style.color = "red"; // If less than 0, make it red
+                } else {
+                    remainingAmountCell.style.color = "green"; // If 0 or more, make it green
+                }
+            });
+        }
+
+        const expenses = {{ data_expenses | tojson }};
+        const income = {{ data_income | tojson }};
+        const goals = {{ data | tojson }};
+
+        const filteredExpenses = filterExpenses()
+        const totalExpenses = filteredExpensesSum(filteredExpenses);
+        const totalIncome = filteredIncomeSum();
+
+        document.getElementById('expenses_sum').textContent = "-" + totalExpenses.toFixed(2) + " €";
+        document.getElementById('income_sum').textContent = "+" + totalIncome.toFixed(2) + " €";
+
+        const spendingOnGoals = calculateSpendingOnGoals(goals, filteredExpenses);
+        updateGoalTable(spendingOnGoals);
+
+        calculatePercentLeftToSpend(totalIncome, totalExpenses);
+
+    </script>
 </body>
 </html>

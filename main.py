@@ -110,20 +110,51 @@ def tulud():
 def säästmine():
     if "user" in session:
         uid = session["user"]
-        entries = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
-        total_expenses = 0
+        entries = db.child("users").child(uid).child("goals").get(token=session['idToken'])
+        expenses = db.child("users").child(uid).child("expenses").get(token=session['idToken'])
+        income = db.child("users").child(uid).child("income").get(token=session['idToken'])
 
         if entries.val():
             data_list = [{"id": key, **entry} for key, entry in entries.val().items()]
         else:
             data_list = []
-        return render_template("säästmine.html", data=data_list, total_sum = total_expenses)
+
+        if expenses.val():
+            data_expenses = [{"id": key, **entry} for key, entry in expenses.val().items()]
+        else:
+            data_expenses = []
+        
+        if income.val():
+            data_income = [{"id": key, **entry} for key, entry in income.val().items()]
+        else:
+            data_income = []
+
+        return render_template("säästmine.html", data=data_list, data_expenses = data_expenses, data_income = data_income)
     return redirect(url_for("login"))
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-    
+
+
+@app.route("/add_goal/<entry_details>", methods=["POST"])
+def add_goal(entry_details):
+    category, amount = entry_details.split(';')
+
+    if category and amount:
+        try:
+            uid = session["user"]
+            db.child("users").child(uid).child("goals").push({
+                "category": category,
+                "goal": amount,
+            }, token=session['idToken'])
+            redirect(url_for("säästmine"))
+            return jsonify({"success": True, "message": "Eesmärk edukalt lisatud!"}), 200 
+        except Exception as e:
+            print("Viga andmete lisamisel Firebase'i:", e)
+            return jsonify({"success": False, "message": f"Lisamine ebaõnnestus: {e}"}), 500
+    else:
+        return jsonify({"success": False, "message": "Palun täitke kõik väljad"}), 500
 
 # Lisab kasutaja esitatud andmed Firebase andmebaasi
 @app.route("/add_data/<entry_details>", methods=["POST"])
@@ -174,7 +205,7 @@ def delete_entry(entry_details):
         uid = session["user"]
         # Attempt to delete the entry in Firebase
         db.child("users").child(uid).child(entry_type).child(entry_id).remove(token=session['idToken'])
-        return jsonify({"success": True, "message": "Tehing edukalt kustutatud!"}), 200
+        return jsonify({"success": True, "message": "Sisend edukalt kustutatud!"}), 200
     except Exception as e:
         # Log the exact error for debugging
         print(f"Viga tehingu kustutamisel Firebase'ist: {e}")
@@ -182,13 +213,13 @@ def delete_entry(entry_details):
 
 @app.route("/modify_entry/<entry_details>", methods=["POST"])
 def modify_entry(entry_details):
-    entry_type = "expenses"
     try:
         uid = session["user"]
         # Attempt to delete the entry in Firebase
         entry_id, entry_date, entry_payer, entry_category, entry_amount, entry_type = entry_details.split(';')
         entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
         i = 0
+
         for change in entry_changes:
             change = change.strip()
             if change == "" or change == None:
@@ -199,6 +230,30 @@ def modify_entry(entry_details):
                     case 1: db.child("users").child(uid).child(entry_type).child(entry_id).update({"payer": str(change)}, token=session['idToken'])
                     case 2: db.child("users").child(uid).child(entry_type).child(entry_id).update({"category": str(change)}, token=session['idToken'])
                     case 3: db.child("users").child(uid).child(entry_type).child(entry_id).update({"amount": str(change)}, token=session['idToken'])
+                i += 1
+        return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
+    except Exception as e:
+        # Log the exact error for debugging
+        print(f"Viga tehingu muutmisel: {e}")
+        return jsonify({"success": False, "message": f"Muutmine ebaõnnestus: {e}"}), 500
+    
+@app.route("/modify_goal/<entry_details>", methods=["POST"])
+def modify_goal(entry_details):
+    try:
+        uid = session["user"]
+        # Attempt to delete the entry in Firebase
+        entry_id, entry_category, entry_goal, entry_type = entry_details.split(';')
+        entry_changes = [entry_category, entry_goal]
+        i = 0
+
+        for change in entry_changes:
+            change = change.strip()
+            if change == "" or change == None:
+                i += 1
+            else:
+                match i:
+                    case 0: db.child("users").child(uid).child(entry_type).child(entry_id).update({"category": str(change)}, token=session['idToken'])
+                    case 1: db.child("users").child(uid).child(entry_type).child(entry_id).update({"goal": str(change)}, token=session['idToken'])
                 i += 1
         return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
     except Exception as e:
