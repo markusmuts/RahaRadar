@@ -2,30 +2,30 @@ function loadGoogleCharts(callback) {
     const script = document.createElement("script");
     script.src = "https://www.gstatic.com/charts/loader.js";
     script.onload = () => {
-        console.log("Google Charts script loaded successfully.");
+        console.log("Google Charts skript laeti edukalt.");
         google.charts.load("current", { packages: ["piechart"] });
         google.charts.setOnLoadCallback(callback);
     };
     script.onerror = () => {
-        console.error("Failed to load Google Charts script.");
+        console.error("Google Charts skripti laadimine ebaõnnestus.");
     };
     document.head.appendChild(script);
 }
 
-// Function to initialize the chart
+// Funktsioon diagrammi algatamiseks
 function initializeChart() {
     if (typeof google === "undefined" || typeof google.visualization === "undefined") {
-        console.error("Google Charts library not available.");
+        console.error("Google Charts teek ei ole saadaval.");
         return;
     }
-    console.log("Google Charts initialized.");
+    console.log("Google Charts algatatud.");
     updateChartData();
 }
 
-// Function to update chart data
+// Funktsioon diagrammi andmete uuendamiseks
 function updateChartData() {
     if (typeof google === "undefined" || typeof google.visualization === "undefined") {
-        console.error("Google Charts library not loaded correctly.");
+        console.error("Google Charts teek ei ole õigesti laetud.");
         return;
     }
 
@@ -35,18 +35,18 @@ function updateChartData() {
     if (selectedMonth && selectedYear) {
         filterByMonthYear();
     } else {
-        console.warn("No month/year selected. Displaying all rows.");
+        console.warn("Kuu/aasta ei ole valitud. Kuvatakse kõik read.");
         const rows = document.querySelectorAll('#transactionTable tbody tr');
         rows.forEach(row => row.style.display = '');
         const processedChartData = preprocessChartData(getRowData(rows));
         if (processedChartData.length <= 1) {
-            console.warn("No valid data found to display in the chart.");
+            console.warn("Kehtivat andmestikku pole diagrammi kuvamiseks.");
         }
         drawChart(processedChartData);
     }
 }
 
-// Function to preprocess chart data
+// Funktsioon et eelprotsesseerida graafiku andmeid
 function preprocessChartData(rawData) {
     const categoryMap = new Map();
 
@@ -63,7 +63,7 @@ function preprocessChartData(rawData) {
     return [["Category", "Amount"], ...Array.from(categoryMap.entries())];
 }
 
-// Function to draw the chart
+// Function, et luua graafik
 function drawChart(chartData) {
     if (!chartData || chartData.length < 2) {
         console.error("Invalid or empty chart data.", chartData);
@@ -97,7 +97,7 @@ function filterByMonthYear() {
     const endDate = new Date(selectedYear, selectedMonth, 0);
 
     const rows = document.querySelectorAll('#transactionTable tbody tr');
-    let total = 0; // Initialize the total sum
+    let total = 0; // Arvuta kogusumma
 
     const filteredRows = Array.from(rows).filter(row => {
         const dateCell = row.cells[0]?.textContent?.trim();
@@ -119,7 +119,6 @@ function filterByMonthYear() {
         row.style.display = isVisible ? '' : 'none';
 
         if (isVisible) {
-            // Include the amount in the total sum if the row is visible
             const amountCell = row.cells[3]?.textContent || '';
             const amount = parseFloat(amountCell.replace(/[^\d.-]/g, ''));
             if (!isNaN(amount)) total += amount;
@@ -129,7 +128,7 @@ function filterByMonthYear() {
 
     console.log('Filtered rows count:', filteredRows.length);
 
-    // Update the total sum in the DOM
+    // Uuenda kogusummat DOM-is
     document.querySelector('.list_bottom span').textContent = `${total.toFixed(2)} €`;
 
     if (filteredRows.length === 0) {
@@ -151,17 +150,17 @@ function filterByMonthYear() {
 
 
 
-// Helper to extract row data
+// Abi andmete lugemisel
 function getRowData(rows) {
     return Array.from(rows).map(row => {
-        // Extract the category from the 3rd cell (adjust index as needed)
-        const categoryCell = row.cells[2]; // Assuming category is in the 3rd cell
+        
+        const categoryCell = row.cells[2]; 
         const category = categoryCell ? categoryCell.textContent.trim() : null;
 
-        // Extract the amount from the 4th cell
-        const amountCell = row.cells[3]; // Assuming amount is in the 4th cell
-        let amount = amountCell ? amountCell.textContent.replace(/[^\d.-]/g, '').trim() : null; // Remove non-numeric characters
-        amount = parseFloat(amount); // Convert to a number
+        
+        const amountCell = row.cells[3]; 
+        let amount = amountCell ? amountCell.textContent.replace(/[^\d.-]/g, '').trim() : null; 
+        amount = parseFloat(amount); // Muuda numbriks
 
         if (!category || isNaN(amount)) {
             console.warn("Invalid row data skipped.", row);
@@ -172,18 +171,17 @@ function getRowData(rows) {
 }
 
 function removeHiddenEntries() {
-    // Select all rows in the table
+    // vali kõik tabeli read
     const rows = document.querySelectorAll('#transactionTable tbody tr');
 
     rows.forEach(row => {
-        // Check if the row is hidden
+       
         if (row.style.display === 'none') {
-            row.remove(); // Remove the row from the table
+            row.remove(); 
         }
     });
 }
 
-// Event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', () => {
     loadGoogleCharts(initializeChart);
 
@@ -218,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Show and hide modal for selecting month and year
+// Näita ja peida modal
 function showMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'flex';
 }
@@ -238,7 +236,7 @@ function deleteEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Lae leht uuesti
                 } else {
                     alert("Kustutamine ebaõnnestus: " + data.message);
                 }
@@ -266,7 +264,7 @@ function modifyEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Lae leht uuesti tabeli uuendamiseks
                 } else {
                     alert("Muutmine ebaõnnestus: " + data.message);
                 }
@@ -293,7 +291,7 @@ function modifyEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Lae leht uuesti tabeli uuendamiseks
                 } else {
                     alert("Muutmine ebaõnnestus: " + data.message);
                 }
@@ -318,7 +316,7 @@ function addEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Lae leht uuesti tabeli uuendamiseks
                 } else {
                     alert(data.message);
                 }
@@ -342,7 +340,7 @@ function addEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Lae leht uuesti tabeli uuendamiseks
                 } else {
                     alert(data.message);
                 }
@@ -367,22 +365,21 @@ function showOptionsOnGoalItem(entryId, entryCategory, entryGoal) {
 }
 
 function showOptionsOnListItem(entryId, entryDate, entryPayer, entryCategory, entryAmount) {
-    // Set the placeholders with the current entry values
     document.getElementById("entryDate").placeholder = entryDate || "Kuupäev puudub";
     document.getElementById("entryPayer").placeholder = entryPayer || "Saaja / Maksja puudub";
     document.getElementById("entryCategory").placeholder = entryCategory || "Kategooria puudub";
     document.getElementById("entryAmount").placeholder = entryAmount + " €" || "Summa puudub";
 
-    // Set the input values to empty so the user can modify them
+    // Lase kasutajal muuta väärtusi
     document.getElementById("entryDate").value = "";
     document.getElementById("entryPayer").value = "";
     document.getElementById("entryCategory").value = "";
     document.getElementById("entryAmount").value = "";
 
-    // Store the entry ID in a hidden field
+    // Lae ENTRY ID peidetud kausta
     document.getElementById("entryId").value = entryId;
 
-    // Display the modal
+    // Näita modal-it
     document.getElementById("optionsModal").style.display = 'flex';
 }
 
@@ -430,11 +427,11 @@ function myFunction() {
 document.addEventListener("DOMContentLoaded", () => {
     removeHiddenEntries();
     
-    // Retrieve values from LocalStorage
+    // Võta andmed andmebaasist
     const selectedMonth = localStorage.getItem("selectedMonth");
     const selectedYear = localStorage.getItem("selectedYear");
 
-    // Month name mapping for Estonian
+    // KUUDE NIMETUSED EESTI KEELES
     const monthNames = {
         "1": "Jaanuar",
         "2": "Veebruar",
@@ -450,15 +447,15 @@ document.addEventListener("DOMContentLoaded", () => {
         "12": "Detsember"
     };
 
-    // Check if both values are available
+    // Vaata kas mõlemad väärtused on olemas
     if (selectedMonth && selectedYear) {
-        // Format the month and year
+        
         const formattedDate = `${monthNames[selectedMonth]} ${selectedYear}`;
         
-        // Display the formatted date in the HTML
+        
         document.getElementById('period').textContent = " " + formattedDate;
     } else {
-        // Handle missing data
+        // Käsitle olematuid andmeid
         console.warn("Month or year is missing from LocalStorage.");
         document.getElementById('period').textContent = " teadmata";
     }

@@ -18,13 +18,11 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import csv
 import pyrebase
 import pandas as pd
-import os
-from LHV import KuludTulud as LHV_KuludTulud 
-from SEB import KuludTulud as SEB_KuludTulud
-from SWEDBANK import KuludTulud as SWED_KuludTulud
 from flask import jsonify
 from secrets import token_hex
-# Ei saa peita oma config-i kuna muidu programm ei töötaks.
+import os
+
+# Firebase konfiguratsioon
 config = {
   "apiKey": "AIzaSyCewjkjV-23sjbKG2QpNQfxo2SN9lMu2oU",
   "authDomain": "raharadar-27498.firebaseapp.com",
@@ -44,12 +42,14 @@ app.config["UPLOAD_FOLDER"] = "uploads"
 app.config['ALLOWED_EXTENSIONS'] = {'csv'}
 app.secret_key = token_hex(24)
 
+# Peamine leht, suunab sisse loginimist või kulude vaatamist
 @app.route("/")
 def main():
     if "user" in session:
         return redirect(url_for("kulud"))
     return redirect(url_for("login"))
 
+# Logimise leht
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error_message = None
@@ -73,11 +73,13 @@ def login():
     return render_template("login.html", error_message=error_message)
         
 
+# Logimist lõpetav raja
 @app.route("/logout")
 def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
 
+# Kulude vaatamise leht
 @app.route("/kulud")
 def kulud():
     if "user" in session:
@@ -92,6 +94,7 @@ def kulud():
         return render_template("kulud.html", data=data_list, total_sum = total_expenses)
     return redirect(url_for("login"))
 
+# Tulu vaatamise leht
 @app.route("/tulud")
 def tulud():
     if "user" in session:
@@ -106,6 +109,7 @@ def tulud():
         return render_template("tulud.html", data=data_list, total_sum = total_expenses)
     return redirect(url_for("login"))
 
+# Säästmisvõimaluste vaatamine ja haldamine
 @app.route("/säästmine")
 def säästmine():
     if "user" in session:
@@ -132,11 +136,11 @@ def säästmine():
         return render_template("säästmine.html", data=data_list, data_expenses = data_expenses, data_income = data_income)
     return redirect(url_for("login"))
 
-
+# Failide üleslaadimise kontrollimine
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-
+# Eesmärgi lisamine
 @app.route("/add_goal/<entry_details>", methods=["POST"])
 def add_goal(entry_details):
     category, amount = entry_details.split(';')
@@ -156,7 +160,7 @@ def add_goal(entry_details):
     else:
         return jsonify({"success": False, "message": "Palun täitke kõik väljad"}), 500
 
-# Lisab kasutaja esitatud andmed Firebase andmebaasi
+# Andmete lisamine Firebase'i
 @app.route("/add_data/<entry_details>", methods=["POST"])
 def add_data(entry_details):
     date, payer, category, amount, entry_type = entry_details.split(';')
@@ -180,11 +184,8 @@ def add_data(entry_details):
             return jsonify({"success": False, "message": f"Lisamine ebaõnnestus: {e}"}), 500
     else:
         return jsonify({"success": False, "message": "Palun täitke kõik väljad"}), 500  
-    
-    # Redirect back to the main page
 
-
-# Hangib andmed Firebase andmebaasist ja kuvab kulud.html lehel
+# Firebase andmete hankimine ja kuvamine
 @app.route("/get_data")
 def get_data():
     uid = session["user"]
@@ -198,24 +199,25 @@ def get_data():
 
     return render_template("kulud.html", data=data_list)
 
+# Kustutamise funktsioon
 @app.route("/delete_entry/<entry_details>", methods=["DELETE"])
 def delete_entry(entry_details):
     entry_id, entry_type = entry_details.split(';')
     try:
         uid = session["user"]
-        # Attempt to delete the entry in Firebase
+        # Kustutamine Firebase-ist
         db.child("users").child(uid).child(entry_type).child(entry_id).remove(token=session['idToken'])
         return jsonify({"success": True, "message": "Sisend edukalt kustutatud!"}), 200
     except Exception as e:
-        # Log the exact error for debugging
         print(f"Viga tehingu kustutamisel Firebase'ist: {e}")
         return jsonify({"success": False, "message": f"Kustutamine ebaõnnestus: {e}"}), 500
 
+# Muutmisfunktsioon
 @app.route("/modify_entry/<entry_details>", methods=["POST"])
 def modify_entry(entry_details):
     try:
         uid = session["user"]
-        # Attempt to delete the entry in Firebase
+        # Muutmise funktsioon
         entry_id, entry_date, entry_payer, entry_category, entry_amount, entry_type = entry_details.split(';')
         entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
         i = 0
@@ -233,15 +235,15 @@ def modify_entry(entry_details):
                 i += 1
         return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
     except Exception as e:
-        # Log the exact error for debugging
         print(f"Viga tehingu muutmisel: {e}")
         return jsonify({"success": False, "message": f"Muutmine ebaõnnestus: {e}"}), 500
-    
+
+# Eesmärgi muutmine
 @app.route("/modify_goal/<entry_details>", methods=["POST"])
 def modify_goal(entry_details):
     try:
         uid = session["user"]
-        # Attempt to delete the entry in Firebase
+        # Eesmärgi muutmine
         entry_id, entry_category, entry_goal, entry_type = entry_details.split(';')
         entry_changes = [entry_category, entry_goal]
         i = 0
@@ -257,12 +259,10 @@ def modify_goal(entry_details):
                 i += 1
         return jsonify({"success": True, "message": "Tehing edukalt muudetud!"}), 200
     except Exception as e:
-        # Log the exact error for debugging
         print(f"Viga tehingu muutmisel: {e}")
         return jsonify({"success": False, "message": f"Muutmine ebaõnnestus: {e}"}), 500
 
-
-# Tagastab Firebase andmed JSON-formaadis, mida saab kasutada Google Charts jaoks
+# Google Charts jaoks andmete tagastamine
 @app.route("/chart-data")
 def chart_data():
     uid = session["user"]
@@ -275,58 +275,92 @@ def chart_data():
     
     return jsonify(data)  
 
-# Funktsioon CSV-faili üleslaadimiseks ja töötlemiseks sõltuvalt valitud pangast
-
+# CSV failide üleslaadimine ja töötlemine
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
     file = request.files.get('csvFile')
     if not file:
         flash("No file uploaded", "error")
         return redirect(url_for("kulud"))
+    
     try:
-        # Load the CSV file into a DataFrame
-        data = pd.read_csv(file)
-        print("CSV Headers:", data.columns.tolist())  # Debug CSV headers
+        # Faili salvestamine
+        filename = file.filename
+        file_path = os.path.join('uploads', filename)
+        file.save(file_path)
 
-        # Map your CSV columns to Firebase fields
+        # CSV faili laadimine
+        data = pd.read_csv(file_path, sep=';', on_bad_lines='skip')
+        data.columns = data.columns.str.strip('"')  # Erilised jutumärgid päistes eemaldatakse
+
+        # Kaardistamine
         column_mapping = {
-            "Kuupäev": "date",        # Correct the name here
+            "Kuupäev": "date",
             "Saaja/Maksja": "payer",
             "Summa": "amount",
-            "Kirjeldus": "category"
+            "Selgitus": "category"
         }
 
-        # Ensure the required columns exist in the uploaded CSV
+        # Nõutavad veerud
         required_columns = set(column_mapping.keys())
         if not required_columns.issubset(data.columns):
             flash(f"CSV must contain columns: {', '.join(required_columns)}", "error")
             return redirect(url_for("kulud"))
 
-        # Rename columns to match Firebase schema
+        # Veergude ümbersuunamine Firebase'iga ühilduvaks
         data.rename(columns=column_mapping, inplace=True)
 
-        # Convert the DataFrame into a list of dictionaries for Firebase
+        # Tehingud Firebase'i
         entries = data.to_dict(orient='records')
 
-        # Save each entry into the Firebase database under "expenses"
+        # Firebase'i viide
         uid = session["user"]
+        firebase_path = db.child("users").child(uid).child("expenses")
+
+        # IdToken uuendamine
+        id_token = session['idToken']
+        try:
+            user = auth.get_account_info(id_token)  # Tokeni valideerimine
+        except:
+            # Kui token on aegunud, siis uuendame selle
+            id_token = auth.refresh(id_token)['idToken']
+
+        # Faili ridadelt Firebase'i andmete lisamine
         for entry in entries:
-            db.child("users").child(uid).child("expenses").push({
-                "date": entry["date"],
-                "payer": entry["payer"],
-                "category": entry["category"],
-                "amount": float(entry["amount"])
-            })
+            try:
+                # Raha summa töötlemine
+                amount = float(entry["amount"].replace(',', '.'))  # Komade asendamine punktidega
+                payer = entry["payer"].strip() if pd.notna(entry["payer"]) else "Unknown"
+                category = entry["category"].strip() if pd.notna(entry["category"]) else "Uncategorized"
+
+                # Üksiku kirje lisamine Firebase'i
+                entry_ref = firebase_path.push({
+                    "date": entry["date"],
+                    "payer": payer,
+                    "category": category,
+                    "amount": amount
+                }, token=id_token)
+
+                # Id
+                print(f"Successfully pushed entry with ID: {entry_ref['name']}")
+
+            except ValueError as ve:
+                print(f"Skipping row due to invalid data: {entry}. Error: {ve}")
+                continue  # Väärtusvead
+
+        # Faili kustutamine pärast töötlemist
+        os.remove(file_path)
+        print(f"File {filename} deleted successfully!")
 
         flash("CSV file successfully uploaded and data added to Firebase!", "success")
         return redirect(url_for("kulud"))
+    
     except Exception as e:
         print(f"Error: {e}")
         flash(f"Error processing CSV: {str(e)}", "error")
         return redirect(url_for("kulud"))
 
-
-
+# Rakenduse käivitamine
 if __name__ == "__main__":
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
