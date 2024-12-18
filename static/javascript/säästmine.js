@@ -2,11 +2,13 @@ function filterByMonthYear() {
     const selectedMonth = document.getElementById('monthSelector').value;
     const selectedYear = document.getElementById('yearSelector').value;
 
+    // Kontrollime, kas kuu ja aasta on valitud
     if (!selectedYear || !selectedMonth) {
-        alert('Please select a valid year and month!');
+        alert('Palun valige kehtiv aasta ja kuu!');
         return;
     }
 
+    // Salvestame valitud kuu ja aasta LocalStorage’i
     localStorage.setItem('selectedMonth', selectedMonth);
     localStorage.setItem('selectedYear', selectedYear);
     
@@ -14,11 +16,11 @@ function filterByMonthYear() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Retrieve values from LocalStorage
+    // Vaatame, kas LocalStorage’is on olemas kuu ja aasta väärtused
     const selectedMonth = localStorage.getItem("selectedMonth");
     const selectedYear = localStorage.getItem("selectedYear");
 
-    // Month name mapping for Estonian
+    // Kuu nimed eesti keeles
     const monthNames = {
         "1": "Jaanuar",
         "2": "Veebruar",
@@ -34,19 +36,19 @@ document.addEventListener("DOMContentLoaded", () => {
         "12": "Detsember"
     };
 
-    // Check if both values are available
+    // Kontrollime, kas mõlemad väärtused on olemas
     if (selectedMonth && selectedYear) {
-        // Format the month and year
+        // Vormindame kuupäeva ja aasta
         document.getElementById('monthSelector').value = selectedMonth;
         document.getElementById('yearSelector').value = selectedYear;
 
         const formattedDate = `${monthNames[selectedMonth]} ${selectedYear}`;
         
-        // Display the formatted date in the HTML
+        // Kuvame vormindatud kuupäeva HTMLis
         document.getElementById('period').textContent = " " + formattedDate;
     } else {
-        // Handle missing data
-        console.warn("Month or year is missing from LocalStorage.");
+        // Kui andmed puuduvad, kuvame hoiatussõnumi
+        console.warn("Kuu või aasta puudub LocalStorage’ist.");
         document.getElementById('period').textContent = " teadmata";
     }
 });
@@ -60,11 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (percentElement) {
         percentElement.textContent = `${displayPercent} %`;
     } else {
-        console.error('Element with ID "percent_to_save" not found.');
+        console.error('Elemendi ID-ga "percent_to_save" ei leitud.');
     }
 });
 
-// Show and hide modal for selecting month and year
+// Näitame ja peidame modaalaken, kus saab valida kuu ja aasta
 function showMonthYearSelector() {
     document.getElementById('monthYearModal').style.display = 'flex';
 }
@@ -77,6 +79,7 @@ function closeMonthYearSelector() {
 function deleteEntry(entryType) {
     const entryId = document.getElementById('entryId').value
     const entryDetails = `${entryId};${entryType}`
+    // Küsimus enne kustutamist
     if (confirm("Kas olete kindel, et soovite seda kustutada?")) {
         fetch(`/delete_entry/${entryDetails}`, {
             method: "DELETE",
@@ -85,20 +88,19 @@ function deleteEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Leht värskendatakse, et tabelit uuendada
                 } else {
                     alert("Kustutamine ebaõnnestus: " + data.message);
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Viga:", error);
                 alert("Kustutamisel tekkis viga.");
             }); 
     }
 }
 
 function modifyEntry(entryType) {
-
     if (entryType == "goals") {
         const entryId = document.getElementById('entryIdGoal').value
         const entryCategory = document.getElementById('entryCategoryGoal').value;
@@ -113,13 +115,13 @@ function modifyEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Leht värskendatakse, et tabelit uuendada
                 } else {
                     alert("Muutmine ebaõnnestus: " + data.message);
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Viga:", error);
                 alert("Muutmisel tekkis viga.");
             });
 
@@ -141,13 +143,13 @@ function modifyEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Leht värskendatakse, et tabelit uuendada
                 } else {
                     alert("Muutmine ebaõnnestus: " + data.message);
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Viga:", error);
                 alert("Muutmisel tekkis viga.");
             });
     }
@@ -166,13 +168,13 @@ function addEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Leht värskendatakse, et tabelit uuendada
                 } else {
                     alert(data.message);
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Viga:", error);
                 alert("Lisamisel tekkis viga.");
             });
 
@@ -190,13 +192,13 @@ function addEntry(entryType) {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to update the table
+                    location.reload(); // Leht värskendatakse, et tabelit uuendada
                 } else {
                     alert(data.message);
                 }
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Viga:", error);
                 alert("Lisamisel tekkis viga.");
             });
     }
@@ -215,31 +217,32 @@ function showOptionsOnGoalItem(entryId, entryCategory, entryGoal) {
 }
 
 function showOptionsOnListItem(entryId, entryDate, entryPayer, entryCategory, entryAmount) {
-    // Set the placeholders with the current entry values
+    // Seame sisendite väärtused ja kohandame kuupäeva, makseja ja summa väli
     document.getElementById("entryDate").placeholder = entryDate || "Kuupäev puudub";
     document.getElementById("entryPayer").placeholder = entryPayer || "Saaja / Maksja puudub";
     document.getElementById("entryCategory").placeholder = entryCategory || "Kategooria puudub";
     document.getElementById("entryAmount").placeholder = entryAmount + " €" || "Summa puudub";
 
-    // Set the input values to empty so the user can modify them
+    // Seame sisendväljad tühjaks, et kasutaja saaks neid muuta
     document.getElementById("entryDate").value = "";
     document.getElementById("entryPayer").value = "";
     document.getElementById("entryCategory").value = "";
     document.getElementById("entryAmount").value = "";
 
-    // Store the entry ID in a hidden field
+    // Salvestame sisendite ID peidetud väljal
     document.getElementById("entryId").value = entryId;
 
-    // Display the modal
+    // Kuvame modaalaken
     document.getElementById("optionsModal").style.display = "flex";
 }
 
 
 function changePercent() {
     const newPercent = parseFloat(document.getElementById("percent").value)
+    // Kontrollime, kas väärtus on sisestatud ja kas see on vahemikus 0-100
     if (newPercent == ""){
         location.reload();
-        console.log("Value not provided")
+        console.log("Väärtust ei ole sisestatud")
     }else if (0 <= newPercent & newPercent <= 100) {
         localStorage.setItem('percent', newPercent)
         location.reload();
