@@ -21,7 +21,7 @@
             <a href="/säästmine">SÄÄSTMINE</a>
         </div>
         <div class="dropdown">
-            <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
+            <button onclick="showDropdown()" class="dropbtn"><i class="fa fa-bars" ></i></button>
             <div id="myDropdown" class="dropdown-content">
               <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
               <a onclick="showEntryItem()" style="cursor: pointer;">Lisa eesmärk</a>
@@ -139,19 +139,19 @@
     </div>
     <script>
         function filterExpenses() {
-            const monthInLocalStorage = localStorage.getItem('selectedMonth'); // Example: "12"
-            const yearInLocalStorage = localStorage.getItem('selectedYear'); // Example: "2023"
+            const monthInLocalStorage = localStorage.getItem('selectedMonth'); 
+            const yearInLocalStorage = localStorage.getItem('selectedYear');
 
-            // Ensure the localStorage data is available
             if (!monthInLocalStorage || !yearInLocalStorage) {
                     alert("Month and Year are not set in localStorage.");
                     return;
                 }
             
+            // Paneb kõik õigete parameetritega andmed kokku
             const filteredExpenses = expenses.filter(expense => {
-                const expenseDate = expense.date.split('.'); // Example: "13.12.23" -> [13, 12, 23]
-                const expenseMonth = parseInt(expenseDate[1]); // Extract the month
-                const expenseYear = 2000 + parseInt(expenseDate[2]); // Extract the year and convert (e.g., "23" -> 2023)
+                const expenseDate = expense.date.split('.');
+                const expenseMonth = parseInt(expenseDate[1]);
+                const expenseYear = 2000 + parseInt(expenseDate[2]);
     
                 return expenseMonth === parseInt(monthInLocalStorage) && expenseYear === parseInt(yearInLocalStorage);
             });
@@ -159,6 +159,7 @@
             return filteredExpenses
         }
 
+        // Vaja eraldi arvutada, et saaks kasutada Säästmise analüüsi osas
         function filteredExpensesSum(filteredExpenses) {
 
             const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
@@ -166,19 +167,19 @@
         }
 
         function filteredIncomeSum() {
-            const monthInLocalStorage = localStorage.getItem('selectedMonth'); // Example: "12"
-            const yearInLocalStorage = localStorage.getItem('selectedYear'); // Example: "2023"
+            const monthInLocalStorage = localStorage.getItem('selectedMonth'); 
+            const yearInLocalStorage = localStorage.getItem('selectedYear');
 
-            // Ensure the localStorage data is available
             if (!monthInLocalStorage || !yearInLocalStorage) {
                     alert("Month and Year are not set in localStorage.");
                     return;
                 }
             
+            // Paneb kõik õigete parameetritega andmed kokku
             const filteredIncome = income.filter(income => {
-                const incomeDate = income.date.split('.'); // Example: "13.12.23" -> [13, 12, 23]
-                const incomeMonth = parseInt(incomeDate[1]); // Extract the month
-                const incomeYear = 2000 + parseInt(incomeDate[2]); // Extract the year and convert (e.g., "23" -> 2023)
+                const incomeDate = income.date.split('.');
+                const incomeMonth = parseInt(incomeDate[1]);
+                const incomeYear = 2000 + parseInt(incomeDate[2]);
     
                 return incomeMonth === parseInt(monthInLocalStorage) && incomeYear === parseInt(yearInLocalStorage);
             });
@@ -190,24 +191,22 @@
     
         function calculatePercentLeftToSpend(totalIncome, totalExpenses) {
 
-                const percentInput = localStorage.getItem('percent')
-                const percentToSave = 1 - parseFloat(percentInput) / 100;
+            const percentInput = localStorage.getItem('percent')
+            const percentToSave = 1 - parseFloat(percentInput) / 100;
 
-                // Perform the calculation: (incomeSum * percentToSave) - totalExpenses
-                const result = (parseFloat(totalIncome) * percentToSave) - parseFloat(totalExpenses);
+            const result = (parseFloat(totalIncome) * percentToSave) - parseFloat(totalExpenses);
     
-                // Display the result
-                document.getElementById('left_to_spend').textContent = result.toFixed(2) + " €";
+            document.getElementById('left_to_spend').textContent = result.toFixed(2) + " €";
         }
 
         function calculateSpendingOnGoals(goals, expenses) {
             return goals.map(goal => {
-                // Calculate total spent on each goal
+                // Arvutab, kui palju on iga eesmärgi kohta arvutatud
                 const totalSpent = expenses.filter(expense => expense.category === goal.category)
                     .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
                 return {
                     category: goal.category,
-                    goalAmount: parseFloat(goal.goal), // Goal amount
+                    goalAmount: parseFloat(goal.goal),
                     totalSpent: totalSpent,
                     remainingAmount: parseFloat(goal.goal) - totalSpent
                 };
@@ -218,20 +217,18 @@
             const tableRows = document.querySelectorAll('#transactionTable tbody tr');
     
             spendingOnGoals.forEach((goal, index) => {
-                const row = tableRows[index]; // Get the row for each goal
-                const remainingAmountCell = row.querySelector('td:nth-child(4)'); // Kulutada jäänud cell
+                const row = tableRows[index];
+                const remainingAmountCell = row.querySelector('td:nth-child(4)');
         
-                // Update "Kulutatud" column (spent amount)
-                row.querySelector('td:nth-child(3)').textContent = goal.totalSpent.toFixed(2) + " €"; // Kulutatud
+                row.querySelector('td:nth-child(3)').textContent = goal.totalSpent.toFixed(2) + " €";
         
-                // Update "Kulutada jäänud" column (remaining amount)
-                remainingAmountCell.textContent = goal.remainingAmount.toFixed(2) + " €"; // Kulutada jäänud
+                remainingAmountCell.textContent = goal.remainingAmount.toFixed(2) + " €";
 
-                // Apply conditional styling based on the remaining amount
+                // Muuda värvi vastavalt arvutatud suurusele
                 if (goal.remainingAmount < 0) {
-                    remainingAmountCell.style.color = "red"; // If less than 0, make it red
+                    remainingAmountCell.style.color = "red";
                 } else {
-                    remainingAmountCell.style.color = "green"; // If 0 or more, make it green
+                    remainingAmountCell.style.color = "green";
                 }
             });
         }

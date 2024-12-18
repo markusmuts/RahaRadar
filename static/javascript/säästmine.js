@@ -15,67 +15,6 @@ function filterByMonthYear() {
     closeMonthYearSelector()
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Vaatame, kas LocalStorage’is on olemas kuu ja aasta väärtused
-    const selectedMonth = localStorage.getItem("selectedMonth");
-    const selectedYear = localStorage.getItem("selectedYear");
-
-    // Kuu nimed eesti keeles
-    const monthNames = {
-        "1": "Jaanuar",
-        "2": "Veebruar",
-        "3": "Märts",
-        "4": "Aprill",
-        "5": "Mai",
-        "6": "Juuni",
-        "7": "Juuli",
-        "8": "August",
-        "9": "September",
-        "10": "Oktoober",
-        "11": "November",
-        "12": "Detsember"
-    };
-
-    // Kontrollime, kas mõlemad väärtused on olemas
-    if (selectedMonth && selectedYear) {
-        // Vormindame kuupäeva ja aasta
-        document.getElementById('monthSelector').value = selectedMonth;
-        document.getElementById('yearSelector').value = selectedYear;
-
-        const formattedDate = `${monthNames[selectedMonth]} ${selectedYear}`;
-        
-        // Kuvame vormindatud kuupäeva HTMLis
-        document.getElementById('period').textContent = " " + formattedDate;
-    } else {
-        // Kui andmed puuduvad, kuvame hoiatussõnumi
-        console.warn("Kuu või aasta puudub LocalStorage’ist.");
-        document.getElementById('period').textContent = " teadmata";
-    }
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const percent = localStorage.getItem("percent");
-    const displayPercent = percent ? percent : "0";
-
-    const percentElement = document.querySelector('#percent_to_save');
-    if (percentElement) {
-        percentElement.textContent = `${displayPercent} %`;
-    } else {
-        console.error('Elemendi ID-ga "percent_to_save" ei leitud.');
-    }
-});
-
-// Näitame ja peidame modaalaken, kus saab valida kuu ja aasta
-function showMonthYearSelector() {
-    document.getElementById('monthYearModal').style.display = 'flex';
-}
-
-function closeMonthYearSelector() {
-    document.getElementById('monthYearModal').style.display = 'none';
-    location.reload();
-}
-
 function deleteEntry(entryType) {
     const entryId = document.getElementById('entryId').value
     const entryDetails = `${entryId};${entryType}`
@@ -217,22 +156,18 @@ function showOptionsOnGoalItem(entryId, entryCategory, entryGoal) {
 }
 
 function showOptionsOnListItem(entryId, entryDate, entryPayer, entryCategory, entryAmount) {
-    // Seame sisendite väärtused ja kohandame kuupäeva, makseja ja summa väli
     document.getElementById("entryDate").placeholder = entryDate || "Kuupäev puudub";
     document.getElementById("entryPayer").placeholder = entryPayer || "Saaja / Maksja puudub";
     document.getElementById("entryCategory").placeholder = entryCategory || "Kategooria puudub";
     document.getElementById("entryAmount").placeholder = entryAmount + " €" || "Summa puudub";
 
-    // Seame sisendväljad tühjaks, et kasutaja saaks neid muuta
     document.getElementById("entryDate").value = "";
     document.getElementById("entryPayer").value = "";
     document.getElementById("entryCategory").value = "";
     document.getElementById("entryAmount").value = "";
 
-    // Salvestame sisendite ID peidetud väljal
     document.getElementById("entryId").value = entryId;
 
-    // Kuvame modaalaken
     document.getElementById("optionsModal").style.display = "flex";
 }
 
@@ -249,6 +184,15 @@ function changePercent() {
     } else {
         alert("Palun sisestage protsent vahemikus 0-100!")
     }
+}
+
+function showMonthYearSelector() {
+    document.getElementById('monthYearModal').style.display = 'flex';
+}
+
+function closeMonthYearSelector() {
+    document.getElementById('monthYearModal').style.display = 'none';
+    location.reload();
 }
 
 function closeOptionsOnListItem() {
@@ -275,6 +219,50 @@ function closeEntryItem() {
     document.getElementById('entryModal').style.display = 'none';
 }
 
-function myFunction() {
+function showDropdown() {
     document.getElementById("myDropdown").classList.toggle("show");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const percent = localStorage.getItem("percent");
+    const displayPercent = percent ? percent : "0";
+
+    const percentElement = document.querySelector('#percent_to_save');
+    if (percentElement) {
+        percentElement.textContent = `${displayPercent} %`;
+    } else {
+        console.error('Elemendi ID-ga "percent_to_save" ei leitud.');
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const selectedMonth = localStorage.getItem("selectedMonth");
+    const selectedYear = localStorage.getItem("selectedYear");
+
+    const monthNames = {
+        "1": "Jaanuar",
+        "2": "Veebruar",
+        "3": "Märts",
+        "4": "Aprill",
+        "5": "Mai",
+        "6": "Juuni",
+        "7": "Juuli",
+        "8": "August",
+        "9": "September",
+        "10": "Oktoober",
+        "11": "November",
+        "12": "Detsember"
+    };
+
+    if (selectedMonth && selectedYear) {
+        document.getElementById('monthSelector').value = selectedMonth;
+        document.getElementById('yearSelector').value = selectedYear;
+
+        const formattedDate = `${monthNames[selectedMonth]} ${selectedYear}`;
+        
+        document.getElementById('period').textContent = " " + formattedDate;
+    } else {
+        console.warn("Kuu või aasta puudub LocalStorage’ist.");
+        document.getElementById('period').textContent = " teadmata";
+    }
+});

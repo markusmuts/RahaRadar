@@ -148,8 +148,6 @@ function filterByMonthYear() {
     closeMonthYearSelector();
 }
 
-
-
 // Abi andmete lugemisel
 function getRowData(rows) {
     return Array.from(rows).map(row => {
@@ -180,49 +178,6 @@ function removeHiddenEntries() {
             row.remove(); 
         }
     });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadGoogleCharts(initializeChart);
-
-    const transactionForm = document.getElementById('transactionForm');
-    if (transactionForm) {
-        transactionForm.addEventListener('submit', () => {
-            setTimeout(() => {
-                const rows = document.querySelectorAll('#transactionTable tbody tr');
-                const processedChartData = preprocessChartData(getRowData(rows));
-                if (processedChartData.length <= 1) {
-                    console.warn("No valid data available after form submission.");
-                }
-                drawChart(processedChartData);
-            }, 100);
-        });
-    }
-
-    const storedMonth = localStorage.getItem('selectedMonth');
-    const storedYear = localStorage.getItem('selectedYear');
-
-    if (storedMonth && storedYear) {
-        document.getElementById('monthSelector').value = storedMonth;
-        document.getElementById('yearSelector').value = storedYear;
-        filterByMonthYear();
-    } else {
-        const rows = document.querySelectorAll('#transactionTable tbody tr');
-        const processedChartData = preprocessChartData(getRowData(rows));
-        if (processedChartData.length <= 1) {
-            console.warn("No valid data available on initial load.");
-        }
-        drawChart(processedChartData);
-    }
-});
-
-// Näita ja peida modal
-function showMonthYearSelector() {
-    document.getElementById('monthYearModal').style.display = 'flex';
-}
-
-function closeMonthYearSelector() {
-    document.getElementById('monthYearModal').style.display = 'none';
 }
 
 function deleteEntry(entryType) {
@@ -370,16 +325,13 @@ function showOptionsOnListItem(entryId, entryDate, entryPayer, entryCategory, en
     document.getElementById("entryCategory").placeholder = entryCategory || "Kategooria puudub";
     document.getElementById("entryAmount").placeholder = entryAmount + " €" || "Summa puudub";
 
-    // Lase kasutajal muuta väärtusi
     document.getElementById("entryDate").value = "";
     document.getElementById("entryPayer").value = "";
     document.getElementById("entryCategory").value = "";
     document.getElementById("entryAmount").value = "";
 
-    // Lae ENTRY ID peidetud kausta
     document.getElementById("entryId").value = entryId;
 
-    // Näita modal-it
     document.getElementById("optionsModal").style.display = 'flex';
 }
 
@@ -394,6 +346,14 @@ function changePercent() {
     } else {
         alert("Palun sisestage protsent vahemikus 0-100!")
     }
+}
+
+function showMonthYearSelector() {
+    document.getElementById('monthYearModal').style.display = 'flex';
+}
+
+function closeMonthYearSelector() {
+    document.getElementById('monthYearModal').style.display = 'none';
 }
 
 function closeOptionsOnListItem() {
@@ -420,18 +380,53 @@ function closeEntryItem() {
     document.getElementById('entryModal').style.display = 'none';
 }
 
-function myFunction() {
+function showDropdown() {
     document.getElementById("myDropdown").classList.toggle("show");
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadGoogleCharts(initializeChart);
+
+    const transactionForm = document.getElementById('transactionForm');
+    if (transactionForm) {
+        transactionForm.addEventListener('submit', () => {
+            // Väikese viivitusega uuendage graafiku andmeid
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#transactionTable tbody tr');
+                const processedChartData = preprocessChartData(getRowData(rows));
+                if (processedChartData.length <= 1) {
+                    console.warn("No valid data available after form submission.");
+                }
+                drawChart(processedChartData);
+            }, 100);
+        });
+    }
+
+    const storedMonth = localStorage.getItem('selectedMonth');
+    const storedYear = localStorage.getItem('selectedYear');
+
+    if (storedMonth && storedYear) {
+        document.getElementById('monthSelector').value = storedMonth;
+        document.getElementById('yearSelector').value = storedYear;
+        filterByMonthYear();
+    } else {
+        // Kui salvestatud filtreid pole, kogutakse tabeli read ja töödeltakse neid
+        const rows = document.querySelectorAll('#transactionTable tbody tr');
+        const processedChartData = preprocessChartData(getRowData(rows));
+        if (processedChartData.length <= 1) {
+            console.warn("No valid data available on initial load.");
+        }
+        drawChart(processedChartData);
+    }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     removeHiddenEntries();
     
-    // Võta andmed andmebaasist
     const selectedMonth = localStorage.getItem("selectedMonth");
     const selectedYear = localStorage.getItem("selectedYear");
 
-    // KUUDE NIMETUSED EESTI KEELES
     const monthNames = {
         "1": "Jaanuar",
         "2": "Veebruar",
@@ -447,15 +442,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "12": "Detsember"
     };
 
-    // Vaata kas mõlemad väärtused on olemas
     if (selectedMonth && selectedYear) {
-        
         const formattedDate = `${monthNames[selectedMonth]} ${selectedYear}`;
-        
-        
         document.getElementById('period').textContent = " " + formattedDate;
     } else {
-        // Käsitle olematuid andmeid
         console.warn("Month or year is missing from LocalStorage.");
         document.getElementById('period').textContent = " teadmata";
     }

@@ -10,12 +10,12 @@
 #
 # Mõningane eeskuju: Eelmise aasta projekt (Koduse eelarve haldamise programm), isiklik vajadus taolise programmi järele
 #
-# Lisakommentaar (nt käivitusjuhend): Main branchis on fail nimega "ülespanek.md", milles on juhend programmi käivitamiseks
+# Lisakommentaar: Javascripti ja osaliselt Pythoni kirjutamisel on kasutatud ChatGPT abi
+# Käivitusjuhend: Main branchis on fail nimega "ülespanek.md", milles on juhend programmi käivitamiseks
 #
 ##################################################
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import csv
 import pyrebase
 import pandas as pd
 from flask import jsonify
@@ -217,7 +217,6 @@ def delete_entry(entry_details):
 def modify_entry(entry_details):
     try:
         uid = session["user"]
-        # Muutmise funktsioon
         entry_id, entry_date, entry_payer, entry_category, entry_amount, entry_type = entry_details.split(';')
         entry_changes = [entry_date, entry_payer, entry_category, entry_amount]
         i = 0
@@ -243,7 +242,6 @@ def modify_entry(entry_details):
 def modify_goal(entry_details):
     try:
         uid = session["user"]
-        # Eesmärgi muutmine
         entry_id, entry_category, entry_goal, entry_type = entry_details.split(';')
         entry_changes = [entry_category, entry_goal]
         i = 0
@@ -275,6 +273,8 @@ def chart_data():
     
     return jsonify(data)  
 
+
+#Ei tööta korrektselt
 # CSV failide üleslaadimine ja töötlemine
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
@@ -284,14 +284,12 @@ def upload_csv():
         return redirect(url_for("kulud"))
     
     try:
-        # Faili salvestamine
         filename = file.filename
         file_path = os.path.join('uploads', filename)
         file.save(file_path)
 
-        # CSV faili laadimine
         data = pd.read_csv(file_path, sep=';', on_bad_lines='skip')
-        data.columns = data.columns.str.strip('"')  # Erilised jutumärgid päistes eemaldatakse
+        data.columns = data.columns.str.strip('"')
 
         # Kaardistamine
         column_mapping = {
@@ -310,43 +308,32 @@ def upload_csv():
         # Veergude ümbersuunamine Firebase'iga ühilduvaks
         data.rename(columns=column_mapping, inplace=True)
 
-        # Tehingud Firebase'i
         entries = data.to_dict(orient='records')
 
         # Firebase'i viide
         uid = session["user"]
         firebase_path = db.child("users").child(uid).child("expenses")
 
-        # IdToken uuendamine
-        id_token = session['idToken']
-        try:
-            user = auth.get_account_info(id_token)  # Tokeni valideerimine
-        except:
-            # Kui token on aegunud, siis uuendame selle
-            id_token = auth.refresh(id_token)['idToken']
-
         # Faili ridadelt Firebase'i andmete lisamine
         for entry in entries:
             try:
                 # Raha summa töötlemine
-                amount = float(entry["amount"].replace(',', '.'))  # Komade asendamine punktidega
+                amount = float(entry["amount"].replace(',', '.'))
                 payer = entry["payer"].strip() if pd.notna(entry["payer"]) else "Unknown"
                 category = entry["category"].strip() if pd.notna(entry["category"]) else "Uncategorized"
 
-                # Üksiku kirje lisamine Firebase'i
                 entry_ref = firebase_path.push({
                     "date": entry["date"],
                     "payer": payer,
                     "category": category,
                     "amount": amount
-                }, token=id_token)
+                }, token=session['idToken'])
 
-                # Id
                 print(f"Successfully pushed entry with ID: {entry_ref['name']}")
 
             except ValueError as ve:
                 print(f"Skipping row due to invalid data: {entry}. Error: {ve}")
-                continue  # Väärtusvead
+                continue
 
         # Faili kustutamine pärast töötlemist
         os.remove(file_path)
@@ -364,5 +351,4 @@ def upload_csv():
 if __name__ == "__main__":
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
-    
-    app.run(debug=True)  # Rakenduse käivitamine silumisrežiimis
+    app.run(debug=False)

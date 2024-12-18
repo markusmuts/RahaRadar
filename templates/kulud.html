@@ -21,7 +21,7 @@
             <a href="/säästmine">SÄÄSTMINE</a>
         </div>
         <div class="dropdown">
-            <button onclick="myFunction()" class="dropbtn"><i class="fa fa-bars" ></i></button>
+            <button onclick="showDropdown()" class="dropbtn"><i class="fa fa-bars" ></i></button>
             <div id="myDropdown" class="dropdown-content">
                 <a onclick="showMonthYearSelector()" style="cursor: pointer;">Vaheta perioodi</a>
                 <a onclick="showEntryItem()" style="cursor: pointer;">Lisa tehing</a>
@@ -73,6 +73,7 @@
                 <p>Tehingute ajalugu</p>
                 <p style="font-size: 16px; padding-bottom: 20px;">Periood: <span style="margin-left: 3px;" id= "period">teadmata</span></p>
             </div>
+            <!--
             <div>
                 <form id="csvUploadForm" action="{{ url_for('upload_csv') }}" method="POST" enctype="multipart/form-data">
                     <label for="csvFile">Lisa CSV fail:</label>
@@ -80,6 +81,7 @@
                     <button type="submit">Laadi üles</button>
                 </form>
             </div>
+            -->
             <div>
                 <div class = "wrapper_table">
                     {% if data and data|length > 0 %}
